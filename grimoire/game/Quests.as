@@ -9,47 +9,47 @@
         public function Quests()
         {
             return;
-        }// end function
+        }
 
         public static function IsInProgress(param1:String) : String
         {
             return Root.Game.world.isQuestInProgress(parseInt(param1)) ? (Root.TrueString) : (Root.FalseString);
-        }// end function
+        }
 
         public static function Complete(param1:String, param2:String = "-1", param3:String = "False") : void
         {
             Root.Game.world.tryQuestComplete(parseInt(param1), parseInt(param2), param3 == "True");
             return;
-        }// end function
+        }
 
         public static function Accept(param1:String) : void
         {
             Root.Game.world.acceptQuest(parseInt(param1));
             return;
-        }// end function
+        }
 
         public static function Load(param1:String) : void
         {
             Root.Game.world.showQuests([param1], "q");
             return;
-        }// end function
+        }
 
         public static function LoadMultiple(param1:String) : void
         {
             Root.Game.world.showQuests(param1.split(","), "q");
             return;
-        }// end function
+        }
 
         public static function GetQuests(param1:String) : void
         {
             Root.Game.world.getQuests(param1.split(","));
             return;
-        }// end function
+        }
 
         public static function IsAvailable(param1:String) : String
         {
             return GetQuestValidationString(parseInt(param1)) == "" ? (Root.TrueString) : (Root.FalseString);
-        }// end function
+        }
 
         public static function CanComplete(param1:String) : String
         {
@@ -63,7 +63,7 @@
                 Root.Game.world.canTurnInQuest(parseInt(param1));
             }
             return _loc_2 == "" ? (Root.TrueString) : (Root.FalseString);
-        }// end function
+        }
 
         private static function CloneObject(param1:Object) : Object
         {
@@ -71,7 +71,7 @@
             _loc_2.writeObject(param1);
             _loc_2.position = 0;
             return _loc_2.readObject();
-        }// end function
+        }
 
         public static function GetQuestTree() : String
         {
@@ -136,7 +136,7 @@
                 _loc_1.push(_loc_3);
             }
             return JSON.stringify(_loc_1);
-        }// end function
+        }
 
         public static function HasRequiredItemsForQuest(param1:Object) : Boolean
         {
@@ -159,7 +159,7 @@
                 }
             }
             return true;
-        }// end function
+        }
 
         public static function GetQuestValidationString(param1:int) : String
         {
@@ -244,7 +244,7 @@
                 return _loc_6.substr(0, _loc_6.length - 2) + ".";
             }
             return "";
-        }// end function
+        }
 
     }
 }

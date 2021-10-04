@@ -86,7 +86,6 @@
             {
                 Game.params[param] = root.loaderInfo.parameters[param];
             }
-            
             Game.params.sURL = this.sURL;
             Game.params.sBG = this.sBG;
             Game.params.sTitle = this.sTitle;
@@ -106,10 +105,9 @@
 
         private function OnLoginComplete(event:Event) : void
         {
-            trace("Login Complete");			
-			var modifiedServers = ExternalInterface.call("modifyServers", event.target.data);
-			if (modifiedServers != null)
-				event.target.data = modifiedServers;
+            trace("Login Complete");
+			trace("data: " + event.target.data);
+			event.target.data = String(ExternalInterface.call("modifyServers", event.target.data));
         }
 
         private function EnterFrame(event:Event) : void
@@ -237,6 +235,7 @@
             ExternalInterface.addCallback("SetFPS", this.SetFPS);
             ExternalInterface.addCallback("RealAddress", this.RealAddress);
             ExternalInterface.addCallback("RealPort", this.RealPort);
+            ExternalInterface.addCallback("ServerName", this.ServerName);
             ExternalInterface.addCallback("setTitle", this.setTitle);
             ExternalInterface.addCallback("SetInfiniteRange", Settings.SetInfiniteRange);
             ExternalInterface.addCallback("SetProvokeMonsters", Settings.SetProvokeMonsters);
@@ -257,7 +256,12 @@
             ExternalInterface.addCallback("SetTargetPvP", Player.SetTargetPvP);
             ExternalInterface.addCallback("GetAvatars", Player.GetAvatars);
         }
-
+		
+        public function ServerName() : String
+        {
+            return "\"" + Game.objServerInfo.sName + "\"";
+        }
+		
         public function RealAddress() : String
         {
             return "\"" + Game.objServerInfo.RealAddress + "\"";
@@ -265,7 +269,7 @@
 
         public function RealPort() : String
         {
-            return Game.objServerInfo.RealPort;
+            return "\"" + Game.objServerInfo.RealPort + "\"";
         }
 
         private function GetUsername() : String
