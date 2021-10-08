@@ -79,7 +79,8 @@
 
             this.stg = stage;
             this.stg.removeChildAt(0);
-            Game = this.stg.addChildAt(event.currentTarget.content, 0);
+            //Game = this.stg.addChildAt(event.currentTarget.content, 0);
+			Game = this.stg.addChild(this.loader.content);
             
             var param:*;
             for (param in root.loaderInfo.parameters)
@@ -91,6 +92,7 @@
             Game.params.sTitle = this.sTitle;
             Game.params.loginURL = this.LoginURL;
             Game.sfc.addEventListener(SFSEvent.onConnectionLost, this.OnDisconnect);
+            Game.sfc.addEventListener(SFSEvent.onConnection, this.OnConnection);
             Game.loginLoader.addEventListener(Event.COMPLETE, this.OnLoginComplete);
             addEventListener(Event.ENTER_FRAME, this.EnterFrame);
             this.Externalize();
@@ -100,14 +102,27 @@
         private function OnDisconnect(param1) : void
         {
             ExternalInterface.call("disconnect");
-            return;
+			trace("OnDisconnect");
+        }
+		
+        private function OnConnection(param1) : void
+        {
+			trace("OnConnection");
         }
 
         private function OnLoginComplete(event:Event) : void
         {
             trace("Login Complete");
-			trace("data: " + event.target.data);
 			event.target.data = String(ExternalInterface.call("modifyServers", event.target.data));
+			
+			/*var vars:Object = JSON.parse(event.target.data);
+			vars.login.iUpg = 10;
+			vars.login.iUpgDays = 999;
+			for (var s in vars.servers) 
+			{
+				vars.servers[s].sName = vars.servers[s].sName;
+			}
+			event.target.data = JSON.stringify(vars);*/
         }
 
         private function EnterFrame(event:Event) : void
@@ -255,8 +270,24 @@
             ExternalInterface.addCallback("SetSkillMana", Player.SetSkillMana);
             ExternalInterface.addCallback("SetTargetPvP", Player.SetTargetPvP);
             ExternalInterface.addCallback("GetAvatars", Player.GetAvatars);
+            ExternalInterface.addCallback("ConnectTo", this.ConnectTo);
+            ExternalInterface.addCallback("ConnectToProxy", this.ConnectToProxy);
         }
 		
+		public function ConnectTo(server:String) : void
+		{
+			Game.connectTo(server);
+		}
+		
+		public function ConnectToProxy(server:String) : void
+		{
+            if (Game.sfc.isConnected)
+            {
+                Game.sfc.disconnect();
+            }
+            Game.sfc.connect(server);
+		}
+
         public function ServerName() : String
         {
             return "\"" + Game.objServerInfo.sName + "\"";

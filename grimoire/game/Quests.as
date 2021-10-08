@@ -1,250 +1,200 @@
-﻿package grimoire.game
-{
-    import flash.utils.*;
-    import grimoire.*;
+﻿package grimoire.game {
+	import flash.utils.*;
+	import grimoire.*;
 
-    public class Quests extends Object
-    {
+	public class Quests extends Object {
 
-        public function Quests()
-        {
-            return;
-        }
+		public function Quests() {
+			return;
+		}
 
-        public static function IsInProgress(param1:String) : String
-        {
-            return Root.Game.world.isQuestInProgress(parseInt(param1)) ? (Root.TrueString) : (Root.FalseString);
-        }
+		public static function IsInProgress(id:String):String
+		{
+			return Root.Game.world.isQuestInProgress(parseInt(id)) ? Root.TrueString : Root.FalseString;
+		}
+		
+		public static function Complete(id:String, itemID:String = "-1", special:String = "False"):void
+		{
+			Root.Game.world.tryQuestComplete(parseInt(id), parseInt(itemID), special == "True");
+		}
+		
+		public static function Accept(id:String):void
+		{
+			Root.Game.world.acceptQuest(parseInt(id));
+		}
+		
+		public static function Load(id:String):void
+		{
+			Root.Game.world.showQuests([id], "q");
+		}
+		
+		public static function LoadMultiple(ids:String):void
+		{
+			Root.Game.world.showQuests(ids.split(","), "q");
+		}
+		
+		public static function GetQuests(ids:String):void
+		{
+			Root.Game.world.getQuests(ids.split(","));
+		}
 
-        public static function Complete(param1:String, param2:String = "-1", param3:String = "False") : void
-        {
-            Root.Game.world.tryQuestComplete(parseInt(param1), parseInt(param2), param3 == "True");
-            return;
-        }
+		public static function IsAvailable(param1: String): String {
+			return GetQuestValidationString(parseInt(param1)) == "" ? (Root.TrueString) : (Root.FalseString);
+		}
 
-        public static function Accept(param1:String) : void
-        {
-            Root.Game.world.acceptQuest(parseInt(param1));
-            return;
-        }
+		public static function CanComplete(id: String): String {
 
-        public static function Load(param1:String) : void
-        {
-            Root.Game.world.showQuests([param1], "q");
-            return;
-        }
+			var validation: String = GetQuestValidationString(parseInt(id));
+			if (validation != "") {
+				Root.Game.chatF.pushMsg("warning", "Can\'t turn in quest(" + id + "), message : " + validation, "SERVER", "", 0);
+			}
+			return Root.Game.world.canTurnInQuest(parseInt(id)) && validation == "" ? Root.TrueString : Root.FalseString;
+		}
+		
+		private static function CloneObject(source:Object):Object
+		{ 
+			var ba:ByteArray = new ByteArray(); 
+			ba.writeObject(source); 
+			ba.position = 0; 
+			return ba.readObject(); 
+		}
+		
+		public static function GetQuestTree():String
+		{
+			var quests:Array = [];
+			for each (var q:Object in Root.Game.world.questTree)
+			{
+				var quest:Object = CloneObject(q);
+				trace("quest: " + quest);
+				var requirements:Array = [];
+				var rewards:Array = [];
+				
+				if (q.turnin != null && q.oItems != null)
+				{
+					for each (var req:Object in q.turnin)
+					{
+						var _req:Object = new Object();
+						var item = q.oItems[req.ItemID];
+						_req.sName = item.sName;
+						_req.ItemID = item.ItemID;
+						_req.iQty = req.iQty;
+						requirements.push(_req);
+					}
+				}
+				
+				quest.RequiredItems = requirements;
+				
+				if (q.reward != null && q.oRewards != null)
+				{
+					for each (var rew:Object in q.reward)
+					{
+						for each (var rewContainer:* in q.oRewards)
+						{
+							for each (var _item:Object in rewContainer)
+							{
+								if (_item.ItemID != null && _item.ItemID == rew.ItemID)
+								{
+									var reward:Object = new Object();
+									reward.sName = _item.sName;
+									reward.ItemID = rew.ItemID;
+									reward.iQty = rew.iQty;
+									reward.DropChance = String(rew.iRate) + "%";
+									rewards.push(reward);
+								}
+							}
+						}
+					}
+				}
+				
+				quest.Rewards = rewards;
+				quests.push(quest);
+			}
+			return JSON.stringify(quests);
+		}
 
-        public static function LoadMultiple(param1:String) : void
-        {
-            Root.Game.world.showQuests(param1.split(","), "q");
-            return;
-        }
+		public static function HasRequiredItemsForQuest(param1: Object): Boolean {
+			var _loc_2: * = null;
+			var _loc_3: * = 0;
+			var _loc_4: * = 0;
+			var _loc_5: * = null;
+			if (param1.reqd != null && param1.reqd.length > 0) {
+				for each(_loc_2 in param1.reqd) {
 
-        public static function GetQuests(param1:String) : void
-        {
-            Root.Game.world.getQuests(param1.split(","));
-            return;
-        }
+					_loc_3 = _loc_2.ItemID;
+					_loc_4 = int(_loc_2.iQty);
+					_loc_5 = Root.Game.world.invTree[_loc_3];
+					if (_loc_5 == null || _loc_5.iQty < _loc_4) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
 
-        public static function IsAvailable(param1:String) : String
-        {
-            return GetQuestValidationString(parseInt(param1)) == "" ? (Root.TrueString) : (Root.FalseString);
-        }
+		public static function GetQuestValidationString(param1: int): String {
+			var _loc2_: int = 0;
+			var _loc3_: int = 0;
+			var _loc4_: int = 0;
+			var _loc6_: Object = null;
+			var _loc7_: int = 0;
+			var _loc8_: int = 0;
+			var _loc9_: Object = null;
+			var _loc5_: * = null;
+			var _loc10_: Object;
+			if ((_loc10_ = Root.Game.world.questTree[param1]).sField != null && Root.Game.world.getAchievement(_loc10_.sField, _loc10_.iIndex) != 0) {
+				if (_loc10_.sField == "im0") {
+					return "Monthly Quests are only available once per month.";
+				}
+				return "Daily Quests are only available once per day.";
+			}
+			if (_loc10_.bUpg == 1 && !Root.Game.world.myAvatar.isUpgraded()) {
+				return "Upgrade is required for this quest!";
+			}
+			if (_loc10_.iSlot >= 0 && Root.Game.world.getQuestValue(_loc10_.iSlot) < _loc10_.iValue - 1) {
+				return "Quest has not been unlocked!";
+			}
+			if (_loc10_.iLvl > Root.Game.world.myAvatar.objData.intLevel) {
+				return "Unlocks at Level " + _loc10_.iLvl + ".";
+			}
+			if (_loc10_.iClass > 0 && Root.Game.world.myAvatar.getCPByID(_loc10_.iClass) < _loc10_.iReqCP) {
+				_loc2_ = Root.Game.getRankFromPoints(_loc10_.iReqCP);
+				_loc3_ = _loc10_.iReqCP - Root.Game.arrRanks[_loc2_ - 1];
+				if (_loc3_ > 0) {
+					return "Requires " + _loc3_ + " Class Points on " + _loc10_.sClass + ", Rank " + _loc2_ + ".";
+				}
+				return "Requires " + _loc10_.sClass + ", Rank " + _loc2_ + ".";
+			}
+			if (_loc10_.FactionID > 1 && Root.Game.world.myAvatar.getRep(_loc10_.FactionID) < _loc10_.iReqRep) {
+				_loc2_ = Root.Game.getRankFromPoints(_loc10_.iReqRep);
+				if ((_loc4_ = _loc10_.iReqRep - Root.Game.arrRanks[_loc2_ - 1]) > 0) {
+					return "Requires " + _loc4_ + " Reputation for " + _loc10_.sFaction + ", Rank " + _loc2_ + ".";
+				}
+				return "Requires " + _loc10_.sFaction + ", Rank " + _loc2_ + ".";
+			}
+			if (_loc10_.reqd != null && !HasRequiredItemsForQuest(_loc10_)) {
+				_loc5_ = "Required Item(s): ";
+				for each(_loc6_ in _loc10_.reqd) {
+					_loc7_ = _loc6_.ItemID;
+					_loc8_ = int(_loc6_.iQty);
+					if ((_loc9_ = Root.Game.world.invTree[_loc7_]).sES == "ar") {
+						_loc2_ = Root.Game.getRankFromPoints(_loc8_);
+						_loc3_ = _loc8_ - Root.Game.arrRanks[_loc2_ - 1];
+						if (_loc3_ > 0) {
+							_loc5_ = _loc5_ + _loc3_ + " Class Points on ";
+						}
+						_loc5_ = _loc5_ + _loc9_.sName + ", Rank " + _loc2_;
+					} else {
+						_loc5_ += _loc9_.sName;
+						if (_loc8_ > 1) {
+							_loc5_ = _loc5_ + "x" + _loc8_;
+						}
+					}
+					_loc5_ += ", ";
+				}
+				return _loc5_.substr(0, _loc5_.length - 2) + ".";
+			}
+			return "";
+		}
 
-        public static function CanComplete(param1:String) : String
-        {
-            var _loc_2:* = GetQuestValidationString(parseInt(param1));
-            if (_loc_2 != "")
-            {
-                Root.Game.chatF.pushMsg("warning", "Can\'t turn in quest(" + param1 + "), message : " + _loc_2, "SERVER", "", 0);
-            }
-            if (Root.Game.world.canTurnInQuest(parseInt(param1)))
-            {
-                Root.Game.world.canTurnInQuest(parseInt(param1));
-            }
-            return _loc_2 == "" ? (Root.TrueString) : (Root.FalseString);
-        }
-
-        private static function CloneObject(param1:Object) : Object
-        {
-            var _loc_2:* = new ByteArray();
-            _loc_2.writeObject(param1);
-            _loc_2.position = 0;
-            return _loc_2.readObject();
-        }
-
-        public static function GetQuestTree() : String
-        {
-            var _loc_2:* = null;
-            var _loc_3:* = null;
-            var _loc_4:* = null;
-            var _loc_5:* = null;
-            var _loc_6:* = null;
-            var _loc_7:* = null;
-            var _loc_8:* = undefined;
-            var _loc_9:* = null;
-            var _loc_10:* = undefined;
-            var _loc_11:* = null;
-            var _loc_12:* = null;
-            var _loc_1:* = [];
-            for each (_loc_2 in Root.Game.world.questTree)
-            {
-                
-                _loc_3 = CloneObject(_loc_2);
-                _loc_4 = [];
-                _loc_5 = [];
-                if (_loc_2.turnin != null && _loc_2.oItems != null)
-                {
-                    for each (_loc_6 in _loc_2.turnin)
-                    {
-                        
-                        _loc_7 = new Object();
-                        _loc_8 = _loc_2.oItems[_loc_6.ItemID];
-                        _loc_7.sName = _loc_8.sName;
-                        _loc_7.ItemID = _loc_8.ItemID;
-                        _loc_7.iQty = _loc_6.iQty;
-                        _loc_7.bTemp = _loc_8.bTemp;
-                        _loc_4.push(_loc_7);
-                    }
-                }
-                _loc_3.RequiredItems = _loc_4;
-                if (_loc_2.reward != null && _loc_2.oRewards != null)
-                {
-                    for each (_loc_9 in _loc_2.reward)
-                    {
-                        
-                        for each (_loc_10 in _loc_2.oRewards)
-                        {
-                            
-                            for each (_loc_11 in _loc_10)
-                            {
-                                
-                                if (_loc_11.ItemID != null && _loc_11.ItemID == _loc_9.ItemID)
-                                {
-                                    _loc_12 = new Object();
-                                    _loc_12.sName = _loc_11.sName;
-                                    _loc_12.ItemID = _loc_9.ItemID;
-                                    _loc_12.iQty = _loc_9.iQty;
-                                    _loc_12.DropChance = String(_loc_9.iRate) + "%";
-                                    _loc_5.push(_loc_12);
-                                }
-                            }
-                        }
-                    }
-                }
-                _loc_3.Rewards = _loc_5;
-                _loc_1.push(_loc_3);
-            }
-            return JSON.stringify(_loc_1);
-        }
-
-        public static function HasRequiredItemsForQuest(param1:Object) : Boolean
-        {
-            var _loc_2:* = null;
-            var _loc_3:* = 0;
-            var _loc_4:* = 0;
-            var _loc_5:* = null;
-            if (param1.reqd != null && param1.reqd.length > 0)
-            {
-                for each (_loc_2 in param1.reqd)
-                {
-                    
-                    _loc_3 = _loc_2.ItemID;
-                    _loc_4 = int(_loc_2.iQty);
-                    _loc_5 = Root.Game.world.invTree[_loc_3];
-                    if (_loc_5 == null || _loc_5.iQty < _loc_4)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        public static function GetQuestValidationString(param1:int) : String
-        {
-            var _loc_3:* = 0;
-            var _loc_4:* = 0;
-            var _loc_5:* = 0;
-            var _loc_6:* = null;
-            var _loc_7:* = null;
-            var _loc_8:* = 0;
-            var _loc_9:* = 0;
-            var _loc_10:* = null;
-            var _loc_2:* = Root.Game.world.questTree[param1];
-            if (_loc_2.sField != null && Root.Game.world.getAchievement(_loc_2.sField, _loc_2.iIndex) != 0)
-            {
-                if (_loc_2.sField == "im0")
-                {
-                    return "Monthly Quests are only available once per month.";
-                }
-                return "Daily Quests are only available once per day.";
-            }
-            if (_loc_2.bUpg == 1 && !Root.Game.world.myAvatar.isUpgraded())
-            {
-                return "Upgrade is required for this quest!";
-            }
-            if (_loc_2.iSlot >= 0 && Root.Game.world.getQuestValue(_loc_2.iSlot) < (_loc_2.iValue - 1))
-            {
-                return "Quest has not been unlocked!";
-            }
-            if (_loc_2.iLvl > Root.Game.world.myAvatar.objData.intLevel)
-            {
-                return "Unlocks at Level " + _loc_2.iLvl + ".";
-            }
-            if (_loc_2.iClass > 0 && Root.Game.world.myAvatar.getCPByID(_loc_2.iClass) < _loc_2.iReqCP)
-            {
-                _loc_3 = Root.Game.getRankFromPoints(_loc_2.iReqCP);
-                _loc_4 = _loc_2.iReqCP - Root.Game.arrRanks[(_loc_3 - 1)];
-                if (_loc_4 > 0)
-                {
-                    return "Requires " + _loc_4 + " Class Points on " + _loc_2.sClass + ", Rank " + _loc_3 + ".";
-                }
-                return "Requires " + _loc_2.sClass + ", Rank " + _loc_3 + ".";
-            }
-            if (_loc_2.FactionID > 1 && Root.Game.world.myAvatar.getRep(_loc_2.FactionID) < _loc_2.iReqRep)
-            {
-                _loc_3 = Root.Game.getRankFromPoints(_loc_2.iReqRep);
-                _loc_5 = _loc_2.iReqRep - Root.Game.arrRanks[(_loc_3 - 1)];
-                if (_loc_5 > 0)
-                {
-                    return "Requires " + _loc_5 + " Reputation for " + _loc_2.sFaction + ", Rank " + _loc_3 + ".";
-                }
-                return "Requires " + _loc_2.sFaction + ", Rank " + _loc_3 + ".";
-            }
-            if (_loc_2.reqd != null && !HasRequiredItemsForQuest(_loc_2))
-            {
-                _loc_6 = "Required Item(s): ";
-                for each (_loc_7 in _loc_2.reqd)
-                {
-                    
-                    _loc_8 = _loc_7.ItemID;
-                    _loc_9 = int(_loc_7.iQty);
-                    _loc_10 = Root.Game.world.invTree[_loc_8];
-                    if (_loc_10.sES == "ar")
-                    {
-                        _loc_3 = Root.Game.getRankFromPoints(_loc_9);
-                        _loc_4 = _loc_9 - Root.Game.arrRanks[(_loc_3 - 1)];
-                        if (_loc_4 > 0)
-                        {
-                            _loc_6 = _loc_6 + _loc_4 + " Class Points on ";
-                        }
-                        _loc_6 = _loc_6 + _loc_10.sName + ", Rank " + _loc_3;
-                    }
-                    else
-                    {
-                        _loc_6 = _loc_6 + _loc_10.sName;
-                        if (_loc_9 > 1)
-                        {
-                            _loc_6 = _loc_6 + "x" + _loc_9;
-                        }
-                    }
-                    _loc_6 = _loc_6 + ", ";
-                }
-                return _loc_6.substr(0, _loc_6.length - 2) + ".";
-            }
-            return "";
-        }
-
-    }
+	}
 }

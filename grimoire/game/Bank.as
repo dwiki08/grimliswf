@@ -8,22 +8,22 @@
         public function Bank()
         {
             return;
-        }// end function
+        }
 
         public static function GetBankItems() : String
         {
             return JSON.stringify(Root.Game.world.bankinfo.items);
-        }// end function
+        }
 
         public static function BankSlots() : int
         {
             return Root.Game.world.myAvatar.objData.iBankSlots;
-        }// end function
+        }
 
         public static function UsedBankSlots() : int
         {
             return Root.Game.world.myAvatar.iBankCount;
-        }// end function
+        }
 
         public static function TransferToBank(param1:String) : void
         {
@@ -33,7 +33,7 @@
                 Root.Game.world.sendBankFromInvRequest(_loc_2);
             }
             return;
-        }// end function
+        }
 
         public static function TransferToInventory(param1:String) : void
         {
@@ -43,7 +43,7 @@
                 Root.Game.world.sendBankToInvRequest(_loc_2);
             }
             return;
-        }// end function
+        }
 
         public static function BankSwap(param1:String, param2:String) : void
         {
@@ -59,7 +59,7 @@
             }
             Root.Game.world.sendBankSwapInvRequest(_loc_4, _loc_3);
             return;
-        }// end function
+        }
 
         public static function GetItemByName(param1:String) : Object
         {
@@ -76,19 +76,19 @@
                 }
             }
             return null;
-        }// end function
+        }
 
         public static function Show() : void
         {
             Root.Game.world.toggleBank();
             return;
-        }// end function
+        }
 
         public static function LoadBankItems() : void
         {
             Root.Game.sfc.sendXtMessage("zm", "loadBank", ["Sword", "Axe", "Dagger", "Gun", "Bow", "Mace", "Polearm", "Staff", "Wand", "Class", "Armor", "Helm", "Cape", "Pet", "Amulet", "Necklace", "Note", "Resource", "Item", "Quest Item", "ServerUse", "House", "Wall Item", "Floor Item", "Enhancement"], "str", Root.Game.world.curRoom);
             return;
-        }// end function
+        }
 
     }
 }
