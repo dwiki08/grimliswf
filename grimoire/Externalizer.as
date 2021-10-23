@@ -171,7 +171,7 @@
 		
 		public function addCallback(name:String, func:Function):void
 		{
-			this.addCallback(name, func);
+			ExternalInterface.addCallback(name, func);
 		}
 		
 		public function call(name:String, ... rest):*
