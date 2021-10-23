@@ -1,82 +1,61 @@
 ﻿package grimoire.game
 {
-    import grimoire.*;
+	import grimoire.Root;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
 
-    public class Settings extends Object
-    {
-
-        public function Settings()
-        {
-            return;
-        }// end function
-
-        public static function SetInfiniteRange() : void
-        {
-            var _loc_1:* = 0;
-            _loc_1 = 0;
-            while (_loc_1 < 5)
-            {
-                
-                Root.Game.world.actions.active[_loc_1].range = 20000;
-                _loc_1++;
-            }
-            return;
-        }// end function
-
-        public static function SetProvokeMonsters() : void
-        {
-            Root.Game.world.aggroAllMon();
-            return;
-        }// end function
-
-        public static function SetEnemyMagnet() : void
-        {
-            if (Root.Game.world.myAvatar.target != null)
-            {
-                Root.Game.world.myAvatar.target.pMC.x = Root.Game.world.myAvatar.pMC.x;
-                Root.Game.world.myAvatar.target.pMC.y = Root.Game.world.myAvatar.pMC.y;
-            }
-            return;
-        }// end function
-
-        public static function SetLagKiller(param1:String) : void
-        {
-            Root.Game.world.visible = param1 == "False";
-            return;
-        }// end function
-
-        public static function DestroyPlayers() : void
-        {
-            var _loc_2:* = NaN;
-            var _loc_1:* = null;
-            for (_loc_1 in Root.Game.world.avatars)
-            {
-                
-                _loc_2 = Number(_loc_1);
-                if (!_loc_4[_loc_2].isMyAvatar)
-                {
-                    Root.Game.world.destroyAvatar(_loc_2);
-                }
-            }
-            return;
-        }// end function
-
-        public static function SetSkipCutscenes() : void
-        {
-            while (Root.Game.mcExtSWF.numChildren > 0)
-            {
-                
-                Root.Game.mcExtSWF.removeChildAt(0);
-            }
-            Root.Game.showInterface();
-            return;
-        }// end function
-
-        public static function SetWalkSpeed(param1:String) : void
-        {
-            Root.Game.world.WALKSPEED = parseInt(param1);
-            return;
-        }// end function
-
-    }
+    public class Settings 
+	{
+		public static function SetInfiniteRange():void
+		{
+			for (var i:int = 0; i < 5; i++)
+			{
+				Root.Game.world.actions.active[i].range = 20000;
+			}
+		}
+		
+		public static function SetProvokeMonsters():void
+		{
+			Root.Game.world.aggroAllMon();
+		}
+		
+		public static function SetEnemyMagnet():void
+		{
+			if (Root.Game.world.myAvatar.target != null)
+			{
+				Root.Game.world.myAvatar.target.pMC.x = Root.Game.world.myAvatar.pMC.x;
+				Root.Game.world.myAvatar.target.pMC.y = Root.Game.world.myAvatar.pMC.y;
+			}
+		}
+		
+		public static function SetLagKiller(state:String):void
+		{
+			Root.Game.world.visible = state == "False";
+		}
+		
+		public static function DestroyPlayers():void
+		{
+			var avatar:* = null;
+			for (avatar in Root.Game.world.avatars)
+			{
+				var numAvatar:Number = Number(avatar);
+				if (!Root.Game.world.avatars[numAvatar].isMyAvatar)
+					Root.Game.world.destroyAvatar(numAvatar);
+			}
+		}
+		
+		public static function SetSkipCutscenes():void
+		{
+			while (Root.Game.mcExtSWF.numChildren > 0)
+			{
+				Root.Game.mcExtSWF.removeChildAt(0);
+			}
+			Root.Game.showInterface();
+		}
+		
+		public static function SetWalkSpeed(speed:String):void
+		{
+			Root.Game.world.WALKSPEED = parseInt(speed);
+		}
+	}
 }

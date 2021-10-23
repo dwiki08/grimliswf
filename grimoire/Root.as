@@ -1,20 +1,37 @@
 ﻿package grimoire
 {
-    import fl.controls.*;
-    import flash.display.*;
-    import flash.events.*;
-    import flash.external.*;
+	import adobe.utils.ProductManager;
+	import flash.display.Loader;
+	import flash.display.LoaderInfo;
+	import flash.display.MovieClip;
+	import flash.display.Stage;
+	import flash.display.StageScaleMode;
+	import flash.display.StageAlign;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.events.ProgressEvent;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
+	import flash.net.URLVariables;
     import flash.net.*;
-    import flash.system.*;
+	import flash.system.ApplicationDomain;
+	import flash.system.LoaderContext;
+	import flash.system.Security;
+	import flash.utils.getQualifiedClassName;
+	import flash.external.ExternalInterface;
+    import flash.filters.GlowFilter;
     import grimoire.game.*;
     import grimoire.tools.*;
 
     public class Root extends MovieClip
     {
-        public var btnTest:Button;
+		private static var _gameClass:Class;
+		private var _handler:*;
+		
         private var urlLoader:URLLoader;
         private var loader:Loader;
         private var loaderVars:Object;
+		private var external:Externalizer;
         private const sTitle:String = "Grimlite Li";
         private const sURL:String = "https://game.aq.com/game/";
         private const versionURL:String = this.sURL + "api/data/gameversion";
@@ -22,7 +39,8 @@
         private var sFile:String;
         private var sBG:String;
         private var stg:Object;
-        public static var Game:Object;
+		private var gameDomain:ApplicationDomain;
+        public static var Game:*;
         public static const TrueString:String = "\"True\"";
         public static const FalseString:String = "\"False\"";
         public static var Username:String;
@@ -91,11 +109,19 @@
             Game.params.sBG = this.sBG;
             Game.params.sTitle = this.sTitle;
             Game.params.loginURL = this.LoginURL;
+			
+			Game.sfc.addEventListener(SFSEvent.onExtensionResponse, this.onExtensionResponse);
+			this.gameDomain = LoaderInfo(event.target).applicationDomain;
+			
             Game.sfc.addEventListener(SFSEvent.onConnectionLost, this.OnDisconnect);
             Game.sfc.addEventListener(SFSEvent.onConnection, this.OnConnection);
             Game.loginLoader.addEventListener(Event.COMPLETE, this.OnLoginComplete);
             addEventListener(Event.ENTER_FRAME, this.EnterFrame);
+			
             this.Externalize();
+			this.external = new Externalizer();
+			//this.external.init(this);
+			
             return;
         }
 
@@ -112,17 +138,17 @@
 
         private function OnLoginComplete(event:Event) : void
         {
-            trace("Login Complete");
-			event.target.data = String(ExternalInterface.call("modifyServers", event.target.data));
-			
-			/*var vars:Object = JSON.parse(event.target.data);
+			catchPackets();
+			//event.target.data = String(ExternalInterface.call("modifyServers", event.target.data));
+			ExternalInterface.call("getServers", event.target.data)
+			var vars:Object = JSON.parse(event.target.data);
 			vars.login.iUpg = 10;
 			vars.login.iUpgDays = 999;
 			for (var s in vars.servers) 
 			{
 				vars.servers[s].sName = vars.servers[s].sName;
 			}
-			event.target.data = JSON.stringify(vars);*/
+			event.target.data = JSON.stringify(vars);
         }
 
         private function EnterFrame(event:Event) : void
@@ -142,13 +168,176 @@
             Username = Game.mcLogin.ni.text;
             Password = Game.mcLogin.pi.text;
         }
+		
+		public function onExtensionResponse(packet:*):void
+		{
+			this.external.call("pext", JSON.stringify(packet));
+		}
+		
+		public function catchPackets():void
+		{
+			Game.sfc.addEventListener(SFSEvent.onDebugMessage, packetReceived);
+		}
+		
+		public function packetReceived(packet:*):void
+		{
+			if (packet.params.message.indexOf("%xt%zm%") > -1)
+			{
+				this.external.call("packet", packet.params.message.replace(/^\s+|\s+$/g, ''));
+			}
+		}
+		
+		public function getGameObject(path:String):String
+		{
+			var obj:* = _getObjectS(Root.Game, path);
+			return JSON.stringify(obj);
+		}
+		
+		public function getGameObjectS(path:String):String
+		{
+			if (_gameClass == null)
+			{
+				_gameClass = this.gameDomain.getDefinition(getQualifiedClassName(Root.Game)) as Class;
+			}
+			var obj:* = _getObjectS(_gameClass, path);
+			return JSON.stringify(obj);
+		}
+		
+		public function setGameObject(path:String, value:*):void
+		{
+			var parts:Array = path.split(".");
+			var varName:String = parts.pop();
+			var obj:* = _getObjectA(Root.Game, parts);
+			obj[varName] = value;
+		}
+		
+		public function getArrayObject(path:String, index:int):String
+		{
+			var obj:* = _getObjectS(Root.Game, path);
+			return JSON.stringify(obj[index]);
+		}
+		
+		public function setArrayObject(path:String, index:int, value:*):void
+		{
+			var obj:* = _getObjectS(Root.Game, path);
+			obj[index] = value;
+		}
+		
+		public function callGameFunction(path:String, ... args):String
+		{
+			var parts:Array = path.split(".");
+			var funcName:String = parts.pop();
+			var obj:* = _getObjectA(Root.Game, parts);
+			var func:Function = obj[funcName] as Function;
+			return JSON.stringify(func.apply(null, args));
+		}
+		
+		public function callGameFunction0(path:String):String
+		{
+			var parts:Array = path.split(".");
+			var funcName:String = parts.pop();
+			var obj:* = _getObjectA(Root.Game, parts);
+			var func:Function = obj[funcName] as Function;
+			return JSON.stringify(func.apply());
+		}
+		
+		public function selectArrayObjects(path:String, selector:String):String
+		{
+			var obj:* = _getObjectS(Root.Game, path);
+			if (!(obj is Array))
+			{
+				this.external.debug("selectArrayObjects target is not an array");
+				return "";
+			}
+			var array:Array = obj as Array;
+			var narray:Array = new Array();
+			for (var j:int = 0; j < array.length; j++)
+			{
+				narray.push(_getObjectS(array[j], selector));
+			}
+			return JSON.stringify(narray);
+		}
+		
+		public function _getObjectS(root:*, path:String):*
+		{
+			return _getObjectA(root, path.split("."));
+		}
+		
+		public function _getObjectA(root:*, parts:Array):*
+		{
+			var obj:* = root;
+			for (var i:int = 0; i < parts.length; i++)
+			{
+				obj = obj[parts[i]];
+			}
+			return obj;
+		}
+		
+		public function isNull(path:String):String
+		{
+			try
+			{
+				return (_getObjectS(Root.Game, path) == null).toString();
+			}
+			catch (ex:Error)
+			{
+			}
+			return "true";
+		}
+		
+		public function sendClientPacket(packet:String, type:String):void
+		{
+			this.external.debug("type: " + type);
+			if (_handler == null)
+			{
+				var cls:Class = Class(this.gameDomain.getDefinition("it.gotoandplay.smartfoxserver.handlers.ExtHandler"));
+				_handler = new cls(Root.Game.sfc);
+			}
+			if (type == "xml")
+			{
+				xmlReceived(packet);
+			}
+			else if (type == "json")
+			{
+				jsonReceived(packet);
+			}
+			else if (type == "str")
+			{
+				strReceived(packet);
+			}
+			else
+			{
+				this.external.debug("Invalid packet type.");
+			}
+		}
+		
+		public function xmlReceived(packet:String):void
+		{
+			_handler.handleMessage(new XML(packet), "xml");
+		}
+		
+		public function jsonReceived(packet:String):void
+		{
+			_handler.handleMessage(JSON.parse(packet)["b"], "json");
+		}
+		
+		public function strReceived(packet:String):void
+		{
+			var array:Array = packet.substr(1, packet.length - 2).split("%");
+			_handler.handleMessage(array.splice(1, array.length - 1), "str");
+		}
+		
+		public function test():String
+		{
+			return JSON.stringify(Root.Game.world.monsters);
+		}
 
         private function Externalize() : void
-        {
+        {			
             ExternalInterface.addCallback("IsLoggedIn", Player.IsLoggedIn);
             ExternalInterface.addCallback("Cell", Player.Cell);
             ExternalInterface.addCallback("Pad", Player.Pad);
-            ExternalInterface.addCallback("Class", Player.Class);
+            ExternalInterface.addCallback("Class", Player.PlayerClass);
             ExternalInterface.addCallback("State", Player.State);
             ExternalInterface.addCallback("Health", Player.Health);
             ExternalInterface.addCallback("HealthMax", Player.HealthMax);
@@ -193,6 +382,14 @@
             ExternalInterface.addCallback("SetTargetPlayer", Player.SetTargetPlayer);
             ExternalInterface.addCallback("ChangeAccessLevel", Player.ChangeAccessLevel);
             ExternalInterface.addCallback("GetTargetHealth", Player.GetTargetHealth);
+            ExternalInterface.addCallback("CheckPlayerInMyCell", Player.CheckPlayerInMyCell);
+            ExternalInterface.addCallback("GetSkillCooldown", Player.GetSkillCooldown);
+            ExternalInterface.addCallback("SetSkillCooldown", Player.SetSkillCooldown);
+            ExternalInterface.addCallback("SetSkillRange", Player.SetSkillRange);
+            ExternalInterface.addCallback("SetSkillMana", Player.SetSkillMana);
+            ExternalInterface.addCallback("SetTargetPvP", Player.SetTargetPvP);
+            ExternalInterface.addCallback("GetAvatars", Player.GetAvatars);
+			
             ExternalInterface.addCallback("MapLoadComplete", World.MapLoadComplete);
             ExternalInterface.addCallback("PlayersInMap", World.PlayersInMap);
             ExternalInterface.addCallback("IsActionAvailable", World.IsActionAvailable);
@@ -207,6 +404,14 @@
             ExternalInterface.addCallback("RoomNumber", World.RoomNumber);
             ExternalInterface.addCallback("Players", World.Players);
             ExternalInterface.addCallback("PlayerByName", World.PlayerByName);
+            ExternalInterface.addCallback("SetWalkSpeed", Player.SetWalkSpeed);
+            ExternalInterface.addCallback("GetCellPlayers", World.GetCellPlayers);
+            ExternalInterface.addCallback("CheckCellPlayer", World.CheckCellPlayer);
+            ExternalInterface.addCallback("GetPlayerHealth", World.GetPlayerHealth);
+            ExternalInterface.addCallback("GetPlayerHealthPercentage", World.GetPlayerHealthPercentage);
+            ExternalInterface.addCallback("RejectDrop", World.RejectDrop);
+            ExternalInterface.addCallback("RejectDrop2", World.RejectDrop2);
+			
             ExternalInterface.addCallback("IsInProgress", Quests.IsInProgress);
             ExternalInterface.addCallback("Complete", Quests.Complete);
             ExternalInterface.addCallback("Accept", Quests.Accept);
@@ -216,6 +421,7 @@
             ExternalInterface.addCallback("GetQuestTree", Quests.GetQuestTree);
             ExternalInterface.addCallback("CanComplete", Quests.CanComplete);
             ExternalInterface.addCallback("IsAvailable", Quests.IsAvailable);
+			
             ExternalInterface.addCallback("GetShops", Shops.GetShops);
             ExternalInterface.addCallback("LoadShop", Shops.Load);
             ExternalInterface.addCallback("LoadHairShop", Shops.LoadHairShop);
@@ -224,6 +430,7 @@
             ExternalInterface.addCallback("ResetShopInfo", Shops.ResetShopInfo);
             ExternalInterface.addCallback("IsShopLoaded", Shops.IsShopLoaded);
             ExternalInterface.addCallback("BuyItem", Shops.BuyItem);
+			
             ExternalInterface.addCallback("GetBankItems", Bank.GetBankItems);
             ExternalInterface.addCallback("BankSlots", Bank.BankSlots);
             ExternalInterface.addCallback("UsedBankSlots", Bank.UsedBankSlots);
@@ -232,46 +439,51 @@
             ExternalInterface.addCallback("BankSwap", Bank.BankSwap);
             ExternalInterface.addCallback("ShowBank", Bank.Show);
             ExternalInterface.addCallback("LoadBankItems", Bank.LoadBankItems);
+			
             ExternalInterface.addCallback("GetInventoryItems", Inventory.GetInventoryItems);
             ExternalInterface.addCallback("InventorySlots", Inventory.InventorySlots);
             ExternalInterface.addCallback("UsedInventorySlots", Inventory.UsedInventorySlots);
             ExternalInterface.addCallback("GetTempItems", TempInventory.GetTempItems);
             ExternalInterface.addCallback("ItemIsInTemp", TempInventory.ItemIsInTemp);
+			
             ExternalInterface.addCallback("GetHouseItems", House.GetHouseItems);
             ExternalInterface.addCallback("HouseSlots", House.HouseSlots);
+			
             ExternalInterface.addCallback("IsTemporarilyKicked", AutoRelogin.IsTemporarilyKicked);
             ExternalInterface.addCallback("Login", AutoRelogin.Login);
             ExternalInterface.addCallback("FixLogin", AutoRelogin.FixLogin);
             ExternalInterface.addCallback("ResetServers", AutoRelogin.ResetServers);
             ExternalInterface.addCallback("AreServersLoaded", AutoRelogin.AreServersLoaded);
             ExternalInterface.addCallback("Connect", AutoRelogin.Connect);
-            ExternalInterface.addCallback("GetUsername", this.GetUsername);
-            ExternalInterface.addCallback("GetPassword", this.GetPassword);
-            ExternalInterface.addCallback("SetFPS", this.SetFPS);
-            ExternalInterface.addCallback("RealAddress", this.RealAddress);
-            ExternalInterface.addCallback("RealPort", this.RealPort);
-            ExternalInterface.addCallback("ServerName", this.ServerName);
-            ExternalInterface.addCallback("setTitle", this.setTitle);
+			
             ExternalInterface.addCallback("SetInfiniteRange", Settings.SetInfiniteRange);
             ExternalInterface.addCallback("SetProvokeMonsters", Settings.SetProvokeMonsters);
             ExternalInterface.addCallback("SetEnemyMagnet", Settings.SetEnemyMagnet);
             ExternalInterface.addCallback("SetLagKiller", Settings.SetLagKiller);
             ExternalInterface.addCallback("DestroyPlayers", Settings.DestroyPlayers);
             ExternalInterface.addCallback("SetSkipCutscenes", Settings.SetSkipCutscenes);
-            ExternalInterface.addCallback("SetWalkSpeed", Player.SetWalkSpeed);
-            ExternalInterface.addCallback("GetCellPlayers", World.GetCellPlayers);
-            ExternalInterface.addCallback("CheckCellPlayer", World.CheckCellPlayer);
-            ExternalInterface.addCallback("CheckPlayerInMyCell", Player.CheckPlayerInMyCell);
-            ExternalInterface.addCallback("GetPlayerHealth", World.GetPlayerHealth);
-            ExternalInterface.addCallback("GetPlayerHealthPercentage", World.GetPlayerHealthPercentage);
-            ExternalInterface.addCallback("GetSkillCooldown", Player.GetSkillCooldown);
-            ExternalInterface.addCallback("SetSkillCooldown", Player.SetSkillCooldown);
-            ExternalInterface.addCallback("SetSkillRange", Player.SetSkillRange);
-            ExternalInterface.addCallback("SetSkillMana", Player.SetSkillMana);
-            ExternalInterface.addCallback("SetTargetPvP", Player.SetTargetPvP);
-            ExternalInterface.addCallback("GetAvatars", Player.GetAvatars);
+			
+            ExternalInterface.addCallback("SetFPS", this.SetFPS);
+            ExternalInterface.addCallback("RealAddress", this.RealAddress);
+            ExternalInterface.addCallback("RealPort", this.RealPort);
+            ExternalInterface.addCallback("ServerName", this.ServerName);
+            ExternalInterface.addCallback("GetUsername", this.GetUsername);
+            ExternalInterface.addCallback("GetPassword", this.GetPassword);
+            ExternalInterface.addCallback("setTitle", this.setTitle);
             ExternalInterface.addCallback("ConnectTo", this.ConnectTo);
             ExternalInterface.addCallback("ConnectToProxy", this.ConnectToProxy);
+			
+			ExternalInterface.addCallback("getGameObject", this.getGameObject);
+			ExternalInterface.addCallback("getGameObjectS", this.getGameObjectS);
+			ExternalInterface.addCallback("setGameObject", this.setGameObject);
+			ExternalInterface.addCallback("getArrayObject", this.getArrayObject);
+			ExternalInterface.addCallback("setArrayObject", this.setArrayObject);
+			ExternalInterface.addCallback("callGameFunction", this.callGameFunction);
+			ExternalInterface.addCallback("callGameFunction0", this.callGameFunction0);
+			ExternalInterface.addCallback("selectArrayObjects", this.selectArrayObjects);
+			ExternalInterface.addCallback("isNull", this.isNull);
+			ExternalInterface.addCallback("catchPackets", this.catchPackets);
+			ExternalInterface.addCallback("sendClientPacket", this.sendClientPacket);
         }
 		
 		public function ConnectTo(server:String) : void
@@ -295,25 +507,25 @@
 		
         public function RealAddress() : String
         {
-            return "\"" + Game.objServerInfo.RealAddress + "\"";
+            return "\"" + Game.objServerInfo.RealAddress + "\"" ;
         }
 
         public function RealPort() : String
         {
-            return "\"" + Game.objServerInfo.RealPort + "\"";
+            return "\"" + Game.objServerInfo.RealPort + "\"" ;
         }
 
-        private function GetUsername() : String
+        public function GetUsername() : String
         {
             return "\"" + Username + "\"";
         }
 
-        private function GetPassword() : String
+        public function GetPassword() : String
         {
             return "\"" + Password + "\"";
         }
 
-        private function SetFPS(fps:String) : void
+        public function SetFPS(fps:String) : void
         {
             this.stg.frameRate = parseInt(fps);
             return;

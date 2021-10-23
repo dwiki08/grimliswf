@@ -394,7 +394,7 @@
             return Root.TrueString;
         }
 
-        public static function Class() : String
+        public static function PlayerClass() : String
         {
             return "\"" + Root.Game.world.myAvatar.objData.strClassName.toUpperCase() + "\"";
         }
@@ -503,7 +503,7 @@
 		public static function GetTargetHealth() : int 
 		{	
 			return Root.Game.world.myAvatar.target.dataLeaf.intHP;
-		}
+		}	
 
     }
 }

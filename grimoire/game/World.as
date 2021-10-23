@@ -1,15 +1,12 @@
 ﻿package grimoire.game
 {
-    import grimoire.*;
+    import grimoire.Root;
+	import flash.utils.getQualifiedClassName;
+    import flash.events.Event;
+    import flash.events.MouseEvent;
 
     public class World extends Object
     {
-
-        public function World()
-        {
-            return;
-        }
-
         public static function MapLoadComplete() : String
         {
             if (!Root.Game.world.mapLoadInProgress)
@@ -256,6 +253,47 @@
             }
             return result;
         }
+		
+		public static function PickupDrops(whitelist:String):void
+		{
+			var all:Boolean = whitelist == "*";
+			var pickup:Array = whitelist.split(",");
+			var accepted:* = [];
+			var children:int = instance.game.ui.dropStack.numChildren;
+			for (var i:int = 0; i < children; i++)
+			{
+				var child:* = instance.game.ui.dropStack.getChildAt(i);
+				var type:String = getQualifiedClassName(child);
+				if (type.indexOf("DFrame2MC") != -1)
+				{
+					var drop:* = parseDrop(child.cnt.strName.text);
+					var name:* = drop.name;
+					if ((all || pickup.indexOf(name) > -1) && accepted.indexOf(name) == -1)
+					{
+						child.cnt.ybtn.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+						accepted.push(name);
+					}
+				}
+			}
+		}
+		
+		public static function RejectDrop(itemName:String):void
+		{
+			for(i = 0; i < Root.Game.ui.dropStack.numChildren; i++)
+			{
+				if(Root.Game.ui.dropStack.getChildAt(i).cnt && Root.Game.ui.dropStack.getChildAt(i).cnt.strName)
+					if(Root.Game.ui.dropStack.getChildAt(i).cnt.strName.text.toLower() == itemName.toLower())
+					{
+						Root.Game.ui.dropStack.getChildAt(i).cnt.nbtn.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+						break;
+					}
+			}
+		}
+		
+		public static function RejectDrop2(itemId:String):void
+		{
+			Root.Game.cDropsUI.onBtNo(Root.Game.world.invTree[itemId]);
+		}
 
     }
 }
