@@ -13,7 +13,6 @@
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.net.URLVariables;
-    import flash.net.*;
 	import flash.system.ApplicationDomain;
 	import flash.system.LoaderContext;
 	import flash.system.Security;
@@ -183,8 +182,35 @@
 		{
 			if (packet.params.message.indexOf("%xt%zm%") > -1)
 			{
-				this.external.call("packet", packet.params.message.replace(/^\s+|\s+$/g, ''));
+				this.external.call("packetFromClient", packet.params.message.replace(/^\s+|\s+$/g, ''));
+			} 
+			else 
+			{
+				this.external.call("packetFromServer", processPacket(packet.params.message));				
 			}
+		}
+		
+		private static function processPacket(packet:String) : String
+		{
+			var index:int = 0;
+			if(packet.indexOf("[Sending - STR]: ") > -1)
+			{
+				packet = packet.replace("[Sending - STR]: ","");
+			}
+			if(packet.indexOf("[ RECEIVED ]: ") > -1)
+			{
+				packet = packet.replace("[ RECEIVED ]: ","");
+			}
+			if(packet.indexOf("[Sending]: ") > -1)
+			{
+				packet = packet.replace("[Sending]: ","");
+			}
+			if(packet.indexOf(", (len: ") > -1)
+			{
+				index = packet.indexOf(", (len: ");
+				packet = packet.slice(0, index);
+			}
+			return packet;
 		}
 		
 		public function getGameObject(path:String):String

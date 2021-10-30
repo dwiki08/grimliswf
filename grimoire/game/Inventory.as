@@ -2,56 +2,50 @@
 {
     import grimoire.*;
 
-    public class Inventory extends Object
-    {
-
-        public function Inventory()
-        {
-            return;
-        }// end function
-
-        public static function GetInventoryItems() : String
-        {
-            return JSON.stringify(Root.Game.world.myAvatar.items);
-        }// end function
-
-        public static function GetItemByName(param1:String) : Object
-        {
-            var _loc_2:* = null;
-            for each (_loc_2 in Root.Game.world.myAvatar.items)
-            {
-                
-                if (_loc_2.sName.toLowerCase() == param1.toLowerCase())
-                {
-                    return _loc_2;
-                }
-            }
-            return null;
-        }// end function
-
-        public static function GetItemByID(param1:int) : Object
-        {
-            var _loc_2:* = null;
-            for each (_loc_2 in Root.Game.world.myAvatar.items)
-            {
-                
-                if (_loc_2.ItemID == param1)
-                {
-                    return _loc_2;
-                }
-            }
-            return null;
-        }// end function
-
-        public static function InventorySlots() : int
-        {
-            return Root.Game.world.myAvatar.objData.iBagSlots;
-        }// end function
-
-        public static function UsedInventorySlots() : int
-        {
-            return Root.Game.world.myAvatar.items.length;
-        }// end function
-
-    }
+	public class Inventory 
+	{
+		public function Inventory() 
+		{
+			
+		}
+		
+		public static function GetInventoryItems():String
+		{
+			return JSON.stringify(Root.Game.world.myAvatar.items);
+		}
+		
+		public static function GetItemByName(name:String):Object
+		{
+			for each (var item:Object in Root.Game.world.myAvatar.items)
+			{
+				if (item.sName.toLowerCase() == name.toLowerCase())
+				{
+					return item;
+				}
+			}
+			return null;
+		}
+		
+		public static function GetItemByID(id:int):Object
+		{
+			for each (var item:Object in Root.Game.world.myAvatar.items)
+			{
+				if (item.ItemID == id)
+				{
+					return item;
+				}
+			}
+			return null;
+		}
+		
+		public static function InventorySlots():int
+		{
+			return Root.Game.world.myAvatar.objData.iBagSlots;
+		}
+		
+		public static function UsedInventorySlots():int
+		{
+			return Root.Game.world.myAvatar.items.length;
+		}
+	}
 }

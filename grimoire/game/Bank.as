@@ -24,59 +24,50 @@
         {
             return Root.Game.world.myAvatar.iBankCount;
         }
-
-        public static function TransferToBank(param1:String) : void
-        {
-            var _loc_2:* = Inventory.GetItemByName(param1);
-            if (_loc_2 != null)
-            {
-                Root.Game.world.sendBankFromInvRequest(_loc_2);
-            }
-            return;
-        }
-
-        public static function TransferToInventory(param1:String) : void
-        {
-            var _loc_2:* = GetItemByName(param1);
-            if (_loc_2 != null)
-            {
-                Root.Game.world.sendBankToInvRequest(_loc_2);
-            }
-            return;
-        }
-
-        public static function BankSwap(param1:String, param2:String) : void
-        {
-            var _loc_3:* = Inventory.GetItemByName(param1);
-            if (_loc_3 == null)
-            {
-                return;
-            }
-            var _loc_4:* = GetItemByName(param2);
-            if (GetItemByName(param2) == null)
-            {
-                return;
-            }
-            Root.Game.world.sendBankSwapInvRequest(_loc_4, _loc_3);
-            return;
-        }
-
-        public static function GetItemByName(param1:String) : Object
-        {
-            var _loc_2:* = null;
-            if (Root.Game.world.bankinfo.items != null && Root.Game.world.bankinfo.items.length > 0)
-            {
-                for each (_loc_2 in Root.Game.world.bankinfo.items)
-                {
-                    
-                    if (_loc_2.sName.toLowerCase() == param1.toLowerCase())
-                    {
-                        return _loc_2;
-                    }
-                }
-            }
-            return null;
-        }
+		
+		public static function TransferToBank(itemName:String):void
+		{
+			var item:Object = Inventory.GetItemByName(itemName);
+			if (item != null)
+			{
+				Root.Game.world.sendBankFromInvRequest(item);
+			}
+		}
+		
+		public static function TransferToInventory(itemName:String):void
+		{
+			var item:Object = GetItemByName(itemName);
+			if (item != null)
+			{
+				Root.Game.world.sendBankToInvRequest(item);
+			}
+		}
+		
+        public static function BankSwap(invItemName:String, bankItemName:String):void
+		{
+			var invItem:Object = Inventory.GetItemByName(invItemName);
+			if (invItem == null) { return; }
+			
+			var bankItem:Object = GetItemByName(bankItemName);
+			if (bankItem == null) { return; }
+			
+			Root.Game.world.sendBankSwapInvRequest(bankItem, invItem);
+		}
+		
+		public static function GetItemByName(name:String):Object
+		{
+			if (Root.Game.world.bankinfo.items != null && Root.Game.world.bankinfo.items.length > 0)
+			{
+				for each (var item:Object in Root.Game.world.bankinfo.items)
+				{
+					if (item.sName.toLowerCase() == name.toLowerCase())
+					{
+						return item;
+					}
+				}
+			}
+			return null;
+		}
 
         public static function Show() : void
         {

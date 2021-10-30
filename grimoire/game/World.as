@@ -4,6 +4,7 @@
 	import flash.utils.getQualifiedClassName;
     import flash.events.Event;
     import flash.events.MouseEvent;
+	import flash.external.ExternalInterface;
 
     public class World extends Object
     {
@@ -254,41 +255,40 @@
             return result;
         }
 		
-		public static function PickupDrops(whitelist:String):void
-		{
-			var all:Boolean = whitelist == "*";
-			var pickup:Array = whitelist.split(",");
-			var accepted:* = [];
-			var children:int = instance.game.ui.dropStack.numChildren;
-			for (var i:int = 0; i < children; i++)
-			{
-				var child:* = instance.game.ui.dropStack.getChildAt(i);
-				var type:String = getQualifiedClassName(child);
-				if (type.indexOf("DFrame2MC") != -1)
-				{
-					var drop:* = parseDrop(child.cnt.strName.text);
-					var name:* = drop.name;
-					if ((all || pickup.indexOf(name) > -1) && accepted.indexOf(name) == -1)
-					{
-						child.cnt.ybtn.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
-						accepted.push(name);
-					}
-				}
-			}
-		}
-		
 		public static function RejectDrop(itemName:String):void
-		{
-			for(i = 0; i < Root.Game.ui.dropStack.numChildren; i++)
-			{
-				if(Root.Game.ui.dropStack.getChildAt(i).cnt && Root.Game.ui.dropStack.getChildAt(i).cnt.strName)
-					if(Root.Game.ui.dropStack.getChildAt(i).cnt.strName.text.toLower() == itemName.toLower())
-					{
-						Root.Game.ui.dropStack.getChildAt(i).cnt.nbtn.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
-						break;
-					}
-			}
-		}
+        {
+            if (Root.Game.litePreference.data.bCustomDrops)
+            {
+                var source:* = Root.Game.cDropsUI.mcDraggable ? Root.Game.cDropsUI.mcDraggable.menu : Root.Game.cDropsUI;
+                for (var i: int = 0; i < source.numChildren; i++)
+                {
+                    var child:* = source.getChildAt(i);
+                    if (child.itemObj)
+                    {
+                        if (itemName == child.itemObj.sName.toLowerCase())
+                        {
+                            child.btNo.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var children:int = Root.Game.ui.dropStack.numChildren;
+                for (var i:int = 0; i < children; i++)
+                {
+                    var child:* = Root.Game.ui.dropStack.getChildAt(i);
+                    var type:String = getQualifiedClassName(child);
+                    if (type.indexOf("DFrame2MC") != -1)
+                    {
+                        if (child.cnt.strName.text.toLowerCase().indexOf(itemName) == 0)
+                        {
+                            child.cnt.nbtn.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+                        }
+                    }
+                }
+            }
+        }
 		
 		public static function RejectDrop2(itemId:String):void
 		{
