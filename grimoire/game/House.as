@@ -1,41 +1,40 @@
 ﻿package grimoire.game
 {
-    import grimoire.*;
+	import grimoire.*;
 
-    public class House extends Object
-    {
+	public class House extends Object
+	{
 
-        public function House()
-        {
-            return;
-        }// end function
+		public function House()
+		{
+			return;
+		}
 
-        public static function GetHouseItems() : String
-        {
-            return JSON.stringify(Root.Game.world.myAvatar.houseitems);
-        }// end function
+		public static function GetHouseItems() : String
+		{
+			return JSON.stringify(Root.Game.world.myAvatar.houseitems);
+		}
 
-        public static function HouseSlots() : int
-        {
-            return Root.Game.world.myAvatar.objData.iHouseSlots;
-        }// end function
+		public static function HouseSlots() : int
+		{
+			return Root.Game.world.myAvatar.objData.iHouseSlots;
+		}
 
-        public static function GetItemByName(param1:String) : Object
-        {
-            var _loc_2:* = null;
-            if (Root.Game.world.myAvatar.houseitems != null && Root.Game.world.myAvatar.houseitems.length > 0)
-            {
-                for each (_loc_2 in Root.Game.world.myAvatar.houseitems)
-                {
-                    
-                    if (_loc_2.sName.toLowerCase() == param1.toLowerCase())
-                    {
-                        return _loc_2;
-                    }
-                }
-            }
-            return null;
-        }// end function
+		public static function GetItemByName(itemName:String) : Object
+		{
+			if (Root.Game.world.myAvatar.houseitems != null && Root.Game.world.myAvatar.houseitems.length > 0)
+			{
+				for each (var item:* in Root.Game.world.myAvatar.houseitems)
+				{
+					
+					if (item.sName.toLowerCase() == itemName.toLowerCase())
+					{
+						return item;
+					}
+				}
+			}
+			return null;
+		}
 
-    }
+	}
 }

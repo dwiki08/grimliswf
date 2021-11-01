@@ -1,8 +1,8 @@
 ﻿package grimoire.game
 {
-    import grimoire.*;
+	import grimoire.*;
 
-    public class TempInventory 
+	public class TempInventory 
 	{
 
 		public function TempInventory() 

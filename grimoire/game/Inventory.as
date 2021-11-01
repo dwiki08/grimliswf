@@ -1,6 +1,6 @@
 ﻿package grimoire.game
 {
-    import grimoire.*;
+	import grimoire.*;
 
 	public class Inventory 
 	{

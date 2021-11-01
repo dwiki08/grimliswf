@@ -1,29 +1,29 @@
 ﻿package grimoire.game
 {
-    import grimoire.*;
+	import grimoire.*;
 
-    public class Bank extends Object
-    {
+	public class Bank extends Object
+	{
 
-        public function Bank()
-        {
-            return;
-        }
+		public function Bank()
+		{
+			return;
+		}
 
-        public static function GetBankItems() : String
-        {
-            return JSON.stringify(Root.Game.world.bankinfo.items);
-        }
+		public static function GetBankItems() : String
+		{
+			return JSON.stringify(Root.Game.world.bankinfo.items);
+		}
 
-        public static function BankSlots() : int
-        {
-            return Root.Game.world.myAvatar.objData.iBankSlots;
-        }
+		public static function BankSlots() : int
+		{
+			return Root.Game.world.myAvatar.objData.iBankSlots;
+		}
 
-        public static function UsedBankSlots() : int
-        {
-            return Root.Game.world.myAvatar.iBankCount;
-        }
+		public static function UsedBankSlots() : int
+		{
+			return Root.Game.world.myAvatar.iBankCount;
+		}
 		
 		public static function TransferToBank(itemName:String):void
 		{
@@ -43,7 +43,7 @@
 			}
 		}
 		
-        public static function BankSwap(invItemName:String, bankItemName:String):void
+		public static function BankSwap(invItemName:String, bankItemName:String):void
 		{
 			var invItem:Object = Inventory.GetItemByName(invItemName);
 			if (invItem == null) { return; }
@@ -69,17 +69,17 @@
 			return null;
 		}
 
-        public static function Show() : void
-        {
-            Root.Game.world.toggleBank();
-            return;
-        }
+		public static function Show() : void
+		{
+			Root.Game.world.toggleBank();
+			return;
+		}
 
-        public static function LoadBankItems() : void
-        {
-            Root.Game.sfc.sendXtMessage("zm", "loadBank", ["Sword", "Axe", "Dagger", "Gun", "Bow", "Mace", "Polearm", "Staff", "Wand", "Class", "Armor", "Helm", "Cape", "Pet", "Amulet", "Necklace", "Note", "Resource", "Item", "Quest Item", "ServerUse", "House", "Wall Item", "Floor Item", "Enhancement"], "str", Root.Game.world.curRoom);
-            return;
-        }
+		public static function LoadBankItems() : void
+		{
+			Root.Game.sfc.sendXtMessage("zm", "loadBank", ["Sword", "Axe", "Dagger", "Gun", "Bow", "Mace", "Polearm", "Staff", "Wand", "Class", "Armor", "Helm", "Cape", "Pet", "Amulet", "Necklace", "Note", "Resource", "Item", "Quest Item", "ServerUse", "House", "Wall Item", "Floor Item", "Enhancement"], "str", Root.Game.world.curRoom);
+			return;
+		}
 
-    }
+	}
 }

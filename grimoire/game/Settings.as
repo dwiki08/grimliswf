@@ -4,7 +4,7 @@
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 
-    public class Settings 
+	public class Settings 
 	{
 		public static function SetInfiniteRange():void
 		{
