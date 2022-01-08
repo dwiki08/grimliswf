@@ -6,12 +6,15 @@ package grimoire
 
 	public class Caller extends Object
 	{
+		private static var _gameClass:Class;
+		private static var _handler:*;
+
 		public static function getGameObject(path:String) : String
 		{
 			return JSON.stringify(_getObjectS(Root.Game, path));
 		}
 		
-		public function getGameObjectS(path:String) : String
+		public static function getGameObjectS(path:String) : String
 		{
 			if (_gameClass == null)
 			{
@@ -103,7 +106,7 @@ package grimoire
 			return "true";
 		}
 
-		public function sendClientPacket(packet:String, type:String):void
+		public static function sendClientPacket(packet:String, type:String):void
 		{
 			Externalizer.debugS("type: " + type);
 			if (_handler == null)
@@ -129,17 +132,17 @@ package grimoire
 			}
 		}
 		
-		public function xmlReceived(packet:String):void
+		public static function xmlReceived(packet:String):void
 		{
 			_handler.handleMessage(new XML(packet), "xml");
 		}
 		
-		public function jsonReceived(packet:String):void
+		public static function jsonReceived(packet:String):void
 		{
 			_handler.handleMessage(JSON.parse(packet)["b"], "json");
 		}
 		
-		public function strReceived(packet:String):void
+		public static function strReceived(packet:String):void
 		{
 			var array:Array = packet.substr(1, packet.length - 2).split("%");
 			_handler.handleMessage(array.splice(1, array.length - 1), "str");

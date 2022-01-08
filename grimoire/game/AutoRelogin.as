@@ -11,15 +11,26 @@
 					Root.Game.mcLogin.btnLogin.visible == false) ? Root.TrueString : Root.FalseString;
 		}
 		
-		public static function Login():void
+		public static function Login(): void
 		{
+			if (Root.Game.charCount() > 0) {
+				//Root.Game.removeChild(Root.Game.mcCharSelect);
+				Root.Game.removeAllChildren();
+				Root.Game.gotoAndPlay("Login");
+			}
 			Root.Game.login(Root.Username, Root.Password);
 		}
 		
-		public static function FixLogin(param1:String, param2:String) : void
+		public static function FixLogin(username:String, password:String): void
 		{
-			Root.Game.login(param1, param2);
-			return;
+			if (Root.Game.charCount() > 0) {
+				//Root.Game.removeChild(Root.Game.mcCharSelect);
+				Root.Game.removeAllChildren();
+				Root.Game.gotoAndPlay("Login");
+			}
+			Root.Username = username;
+			Root.Password = password;
+			Root.Game.login(username, password);
 		}
 		
 		public static function ResetServers():String
@@ -55,6 +66,7 @@
 			{
 				if (server.sName == name)
 				{
+					server.iMax = 5000;
 					Root.Game.objServerInfo = server;
 					Root.Game.chatF.iChat = server.iChat;
 					break;

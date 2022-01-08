@@ -9,14 +9,18 @@
 	import flash.display.StageAlign;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
+	import flash.events.KeyboardEvent;
+	import flash.events.TimerEvent;
 	import flash.events.ProgressEvent;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
+	import flash.net.URLRequestMethod;
 	import flash.net.URLVariables;
 	import flash.system.ApplicationDomain;
 	import flash.system.LoaderContext;
 	import flash.system.Security;
 	import flash.utils.getQualifiedClassName;
+	import flash.utils.Timer;
 	import flash.external.ExternalInterface;
 	import flash.filters.GlowFilter;
 	import grimoire.game.*;
@@ -24,8 +28,6 @@
 
 	public class Root extends MovieClip
 	{
-		private static var _gameClass:Class;
-		private var _handler:*;
 		private var urlLoader:URLLoader;
 		private var loader:Loader;
 		private var loaderVars:Object;
@@ -37,6 +39,7 @@
 		private var sFile:String;
 		private var sBG:String;
 		private var stg:Object;
+		private var vars:URLVariables;
 		public static var GameDomain:ApplicationDomain;
 		public static var Game:*;
 		public static const TrueString:String = "\"True\"";
@@ -44,6 +47,7 @@
 		public static var Username:String;
 		public static var Password:String;
 		public var mcLoading:MovieClip;
+		private var serversLoader:URLLoader = new URLLoader();
 
 		public function Root()
 		{
@@ -64,6 +68,7 @@
 			this.urlLoader.removeEventListener(Event.COMPLETE,this.OnDataComplete);
 			var vars:Object = JSON.parse(event.target.data);
 			this.sFile = vars.sFile + "?ver=" + vars.sVersion;
+			//this.sFile = vars.sFile + "?ver=" + Math.random();
 			//this.sTitle = vars.sTitle;
 			this.sBG = vars.sBG;			
 			this.loaderVars = vars;
@@ -95,14 +100,14 @@
 
 			this.stg = stage;
 			this.stg.removeChildAt(0);
-			//Game = this.stg.addChildAt(event.currentTarget.content, 0);
-			Game = this.stg.addChild(this.loader.content);
+			Game = this.stg.addChildAt(event.currentTarget.content, 0);
+			//Game = this.stg.addChild(this.loader.content);
 			
-			var param:*;
-			for (param in root.loaderInfo.parameters)
+			for (var param:String in root.loaderInfo.parameters)
 			{
 				Game.params[param] = root.loaderInfo.parameters[param];
 			}
+			Game.params.vars = this.loaderVars;
 			Game.params.sURL = this.sURL;
 			Game.params.sBG = this.sBG;
 			Game.params.sTitle = this.sTitle;
@@ -113,8 +118,32 @@
 			
 			Game.sfc.addEventListener(SFSEvent.onConnectionLost, this.OnDisconnect);
 			Game.sfc.addEventListener(SFSEvent.onConnection, this.OnConnection);
-			Game.loginLoader.addEventListener(Event.COMPLETE, this.OnLoginComplete);
+			Game.sfc.addEventListener(SFSEvent.onDebugMessage, this.PacketReceived);
+			Game.loginLoader.addEventListener(Event.COMPLETE, this.OnLoginComplete);	
+			//getServers();
 			addEventListener(Event.ENTER_FRAME, this.EnterFrame);
+		}
+
+		private function getServers() {
+			var urlServers:String = "https://game.aq.com/game/api/data/servers";
+			var request:URLRequest = new URLRequest(urlServers);
+			request.method = URLRequestMethod.GET;
+			
+			serversLoader.addEventListener(Event.COMPLETE, this.OnServersLoaded);
+			try 
+			{
+				serversLoader.load(request);
+			}
+			catch(e) 
+			{
+				trace("Failed to getting servers info.")
+			}
+		}
+
+		private function OnServersLoaded(event:Event) {
+			var vars:Object = JSON.parse(event.target.data);
+			this.external.call("getServers2", JSON.stringify(vars));
+			serversLoader.removeEventListener(Event.COMPLETE, this.OnServersLoaded);
 		}
 
 		private function OnDisconnect(param1) : void
@@ -130,10 +159,10 @@
 
 		private function OnLoginComplete(event:Event) : void
 		{
-			CatchPackets();
 			//event.target.data = String(ExternalInterface.call("modifyServers", event.target.data));
-			this.external.call("getServers", event.target.data)
 			var vars:Object = JSON.parse(event.target.data);
+			this.external.call("getServers", JSON.stringify(vars))
+			vars.login.iAccess = 50;
 			vars.login.iUpg = 10;
 			vars.login.iUpgDays = 999;
 			for (var s in vars.servers) 
@@ -141,29 +170,99 @@
 				vars.servers[s].sName = vars.servers[s].sName;
 			}
 			event.target.data = JSON.stringify(vars);
+			if (Game.mcCharSelect) Game.mcCharSelect.Game.objLogin = vars;
 		}
 
 		private function EnterFrame(event:Event) : void
 		{
 			if (Game.mcLogin != null && Game.mcLogin.ni != null && Game.mcLogin.pi != null && Game.mcLogin.btnLogin != null)
 			{
-				removeEventListener(Event.ENTER_FRAME, EnterFrame);
-				var btn:* = Game.mcLogin.btnLogin;
-				btn.addEventListener(MouseEvent.CLICK, OnLoginClick);
+				//removeEventListener(Event.ENTER_FRAME, EnterFrame);
+				Game.mcLogin.btnLogin.removeEventListener(MouseEvent.CLICK, this.onLoginClick);
+				Game.mcLogin.btnLogin.addEventListener(MouseEvent.CLICK, this.onLoginClick);
+			}
+			if (Game.mcCharSelect != null) 
+			{
+				Game.mcCharSelect.btnLogin.removeEventListener(MouseEvent.CLICK, Game.mcCharSelect.onBtnLogin);
+				Game.mcCharSelect.btnLogin.addEventListener(MouseEvent.CLICK, this.onBtnLogin);
+
+				Game.mcCharSelect.btnServer.removeEventListener(MouseEvent.CLICK, Game.mcCharSelect.onBtnServer);
+				Game.mcCharSelect.btnServer.addEventListener(MouseEvent.CLICK, this.onBtnServer);
+
+				Game.mcCharSelect.passwordui.txtPassword.removeEventListener(KeyboardEvent.KEY_DOWN, Game.mcCharSelect.passwordui.onPasswordEnter);
+				Game.mcCharSelect.passwordui.txtPassword.addEventListener(KeyboardEvent.KEY_DOWN, this.onPasswordEnter);
 			}
 		}
 
-		private function OnLoginClick(event:MouseEvent) : void
+		private function onLoginClick(event:MouseEvent) : void
 		{
-			var btn:* = Game.mcLogin.btnLogin;
-			btn.removeEventListener(MouseEvent.CLICK, OnLoginClick);
 			Username = Game.mcLogin.ni.text;
 			Password = Game.mcLogin.pi.text;
 		}
-		
-		private function CatchPackets():void
+
+		public function onBtnServer(event:MouseEvent) : void
 		{
-			Game.sfc.addEventListener(SFSEvent.onDebugMessage, PacketReceived);
+			Game.mcCharSelect.skipServers = false;
+			var loginData:* = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo;
+			if(loginData.bAsk)
+			{
+				Game.mcCharSelect.utl.close(1);
+				Game.mcCharSelect.passwordui.pos = Game.mcCharSelect.pos;
+				Game.mcCharSelect.passwordui.bCharOpts = false;
+				Game.mcCharSelect.passwordui.visible = true;
+			}
+			else
+			{
+				Login();
+			}
+		}
+
+		private function onBtnLogin(event:MouseEvent): void
+		{
+			Game.mcCharSelect.skipServers = true;
+			Login();
+			myTimer.addEventListener(TimerEvent.TIMER, this.WaitServersLoad);
+			myTimer.start();
+		}
+
+		private function onPasswordEnter(event:KeyboardEvent) : void
+		{
+			if(event.keyCode == 13)
+			{
+				var relPass:* = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo;
+				if(relPass.strPassword != Game.mcCharSelect.passwordui.txtPassword.text)
+				{
+					Game.mcCharSelect.passwordui.txtWarning.visible = true;
+				}
+				else if(Game.mcCharSelect.passwordui.bCharOpts)
+				{
+					Game.mcCharSelect.charoptionsui.setOff();
+				}
+				else
+				{
+					Login();
+				}
+			}
+		}
+
+		private function Login(): void 
+		{
+			Username = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo.strUsername;
+			Password = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo.strPassword;
+			AutoRelogin.FixLogin(Username, Password);
+		}
+
+		private var myTimer:Timer = new Timer(500);
+		private function WaitServersLoad(event: TimerEvent): void
+		{
+			if (AutoRelogin.AreServersLoaded() == Root.TrueString) 
+			{
+				myTimer.removeEventListener(TimerEvent.TIMER, this.WaitServersLoad);
+				myTimer.stop();
+
+				var server:String = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].server;
+				AutoRelogin.Connect(server);
+			}
 		}
 		
 		private function OnExtensionResponse(packet:*):void

@@ -67,9 +67,9 @@
 			return Root.Game.world.myAvatar.dataLeaf.intLevel;
 		}
 
-		public static function IsMember() : Boolean
+		public static function IsMember() : String
 		{
-			return Root.Game.world.myAvatar.objData.iUpgDays >= 0;
+			return Root.Game.world.myAvatar.objData.iUpgDays >= 0 ? (Root.TrueString) : (Root.FalseString);
 		}
 
 		public static function Gold() : int

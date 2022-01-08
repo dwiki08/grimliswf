@@ -87,6 +87,11 @@
 			return JSON.stringify(ret);
 		}
 		
+		public static function GetMonsterHealth(monster:String) : String {
+			var mon:Object = World.GetMonsterByName2(monster);
+			return mon.dataLeaf.intHP.toString();
+		}
+		
 		public static function SetSpawnPoint():void
 		{
 			Root.Game.world.setSpawnPoint(Root.Game.world.strFrame, Root.Game.world.strPad);

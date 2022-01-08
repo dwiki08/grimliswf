@@ -68,12 +68,14 @@
 			this.addCallback("SetSkillMana", Player.SetSkillMana);
 			this.addCallback("SetTargetPvP", Player.SetTargetPvP);
 			this.addCallback("GetAvatars", Player.GetAvatars);
+			this.addCallback("IsMember", Player.IsMember);
 			
 			this.addCallback("MapLoadComplete", World.MapLoadComplete);
 			this.addCallback("PlayersInMap", World.PlayersInMap);
 			this.addCallback("IsActionAvailable", World.IsActionAvailable);
 			this.addCallback("GetMonstersInCell", World.GetMonstersInCell);
 			this.addCallback("GetVisibleMonstersInCell", World.GetVisibleMonstersInCell);
+			this.addCallback("GetMonsterHealth", World.GetMonsterHealth);
 			this.addCallback("SetSpawnPoint", World.SetSpawnPoint);
 			this.addCallback("IsMonsterAvailable", World.IsMonsterAvailable);
 			this.addCallback("GetSkillName", World.GetSkillName);

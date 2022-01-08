@@ -8,7 +8,7 @@
 	{
 		public static function SetInfiniteRange():void
 		{
-			for (var i:int = 0; i < 5; i++)
+			for (var i:int = 0; i <= 5; i++)
 			{
 				Root.Game.world.actions.active[i].range = 20000;
 			}
