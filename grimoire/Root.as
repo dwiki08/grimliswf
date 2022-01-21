@@ -12,6 +12,7 @@
 	import flash.events.KeyboardEvent;
 	import flash.events.TimerEvent;
 	import flash.events.ProgressEvent;
+	import flash.ui.Keyboard;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestMethod;
@@ -100,8 +101,8 @@
 
 			this.stg = stage;
 			this.stg.removeChildAt(0);
-			Game = this.stg.addChildAt(event.currentTarget.content, 0);
-			//Game = this.stg.addChild(this.loader.content);
+			//Game = this.stg.addChildAt(event.currentTarget.content, 0);
+			Game = this.stg.addChild(this.loader.content);
 			
 			for (var param:String in root.loaderInfo.parameters)
 			{
@@ -162,7 +163,7 @@
 			//event.target.data = String(ExternalInterface.call("modifyServers", event.target.data));
 			var vars:Object = JSON.parse(event.target.data);
 			this.external.call("getServers", JSON.stringify(vars))
-			vars.login.iAccess = 50;
+			vars.login.iAccess = 70;
 			vars.login.iUpg = 10;
 			vars.login.iUpgDays = 999;
 			for (var s in vars.servers) 
@@ -180,6 +181,9 @@
 				//removeEventListener(Event.ENTER_FRAME, EnterFrame);
 				Game.mcLogin.btnLogin.removeEventListener(MouseEvent.CLICK, this.onLoginClick);
 				Game.mcLogin.btnLogin.addEventListener(MouseEvent.CLICK, this.onLoginClick);
+
+				Game.mcLogin.removeEventListener(KeyboardEvent.KEY_DOWN, this.onLoginKeyEnter);
+				Game.mcLogin.addEventListener(KeyboardEvent.KEY_DOWN, this.onLoginKeyEnter);
 			}
 			if (Game.mcCharSelect != null) 
 			{
@@ -198,6 +202,17 @@
 		{
 			Username = Game.mcLogin.ni.text;
 			Password = Game.mcLogin.pi.text;
+				Externalizer.debugS("> LoginInfo: " + Username + " " + Password);
+		}
+
+		private function onLoginKeyEnter(event:KeyboardEvent) : void 
+		{
+			if(event.keyCode == Keyboard.ENTER) 
+			{
+				Username = Game.mcLogin.ni.text;
+				Password = Game.mcLogin.pi.text;
+				Externalizer.debugS("> LoginInfo: " + Username + " " + Password);
+			}
 		}
 
 		public function onBtnServer(event:MouseEvent) : void
@@ -227,7 +242,7 @@
 
 		private function onPasswordEnter(event:KeyboardEvent) : void
 		{
-			if(event.keyCode == 13)
+			if(event.keyCode == Keyboard.ENTER)
 			{
 				var relPass:* = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo;
 				if(relPass.strPassword != Game.mcCharSelect.passwordui.txtPassword.text)
@@ -249,10 +264,10 @@
 		{
 			Username = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo.strUsername;
 			Password = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo.strPassword;
-			AutoRelogin.FixLogin(Username, Password);
+			AutoRelogin.Login();
 		}
 
-		private var myTimer:Timer = new Timer(500);
+		private var myTimer:Timer = new Timer(200);
 		private function WaitServersLoad(event: TimerEvent): void
 		{
 			if (AutoRelogin.AreServersLoaded() == Root.TrueString) 

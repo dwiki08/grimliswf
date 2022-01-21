@@ -71,6 +71,7 @@
 			this.addCallback("IsMember", Player.IsMember);
 			
 			this.addCallback("MapLoadComplete", World.MapLoadComplete);
+			this.addCallback("ReloadMap", World.ReloadMap);
 			this.addCallback("PlayersInMap", World.PlayersInMap);
 			this.addCallback("IsActionAvailable", World.IsActionAvailable);
 			this.addCallback("GetMonstersInCell", World.GetMonstersInCell);
@@ -111,7 +112,9 @@
 			this.addCallback("IsShopLoaded", Shops.IsShopLoaded);
 			this.addCallback("BuyItem", Shops.BuyItem);
 			
+			this.addCallback("GetBank", Bank.GetBank);
 			this.addCallback("GetBankItems", Bank.GetBankItems);
+			this.addCallback("GetBankItemByName", Bank.GetItemByName2);
 			this.addCallback("BankSlots", Bank.BankSlots);
 			this.addCallback("UsedBankSlots", Bank.UsedBankSlots);
 			this.addCallback("TransferToBank", Bank.TransferToBank);
@@ -121,6 +124,7 @@
 			this.addCallback("LoadBankItems", Bank.LoadBankItems);
 			
 			this.addCallback("GetInventoryItems", Inventory.GetInventoryItems);
+			this.addCallback("GetInventoryItemByName", Inventory.GetItemByName2);
 			this.addCallback("InventorySlots", Inventory.InventorySlots);
 			this.addCallback("UsedInventorySlots", Inventory.UsedInventorySlots);
 			this.addCallback("GetTempItems", TempInventory.GetTempItems);

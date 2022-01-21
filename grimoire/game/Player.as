@@ -141,16 +141,12 @@
 		public static function CancelAutoAttack() : void
 		{
 			Root.Game.world.cancelAutoAttack();
-			return;
 		}
 
 		public static function CancelTarget() : void
 		{
-			if (Root.Game.world.myAvatar.target != null)
-			{
-				Root.Game.world.cancelTarget();
-			}
-			return;
+			Game.world.cancelTarget();
+			Game.world.cancelTarget();
 		}
 
 		public static function CancelTargetSelf() : void
@@ -164,14 +160,12 @@
 			{
 				Root.Game.world.cancelTarget();
 			}
-			return;
 		}
 
 		public static function SetTargetPlayer(username:String) : void
 		{
 			var avatar:* = Root.Game.world.getAvatarByUserName(username);
 			Root.Game.world.setTarget(avatar);
-			return;
 		}
 		
 		public static function GetAvatars() : String

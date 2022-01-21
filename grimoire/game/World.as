@@ -188,44 +188,34 @@
 
 		public static function GetCellPlayers(param1)
 		{
-			var _loc_2:* = undefined;
-			var _loc_3:* = undefined;
-			var _loc_4:* = Root.Game.world.uoTree;
-			var _loc_5:* = Root.FalseString;
-			for (_loc_3 in _loc_4)
+			for (var p:* in Root.Game.world.uoTree)
 			{
-				
-				_loc_2 = _loc_4[_loc_3];
-				if (_loc_2.strUsername.toLowerCase() == param1.toLowerCase())
+				var player:* = Root.Game.world.uoTree[p];
+				if (player.strUsername.toLowerCase() == param1.toLowerCase())
 				{
-					if (_loc_2.strFrame.toLowerCase() == Root.Game.world.strFrame.toLowerCase())
+					if (player.strFrame.toLowerCase() == Root.Game.world.strFrame.toLowerCase())
 					{
-						_loc_5 = Root.TrueString;
+						return Root.TrueString;
 					}
 				}
 			}
-			return _loc_5;
+			return Root.FalseString;
 		}
 
 		public static function CheckCellPlayer(param1, param2)
 		{
-			var _loc_3:* = undefined;
-			var _loc_4:* = undefined;
-			var _loc_5:* = Root.Game.world.uoTree;
-			var _loc_6:* = Root.FalseString;
-			for (_loc_4 in _loc_5)
+			for (var p in Root.Game.world.uoTree)
 			{
-				
-				_loc_3 = _loc_5[_loc_4];
-				if (_loc_3.strUsername.toLowerCase() == param1.toLowerCase())
+				var player:* = Root.Game.world.uoTree[p];
+				if (player.strUsername.toLowerCase() == param1.toLowerCase())
 				{
-					if (_loc_3.strFrame.toLowerCase() == param2.toLowerCase())
+					if (player.strFrame.toLowerCase() == param2.toLowerCase())
 					{
-						_loc_6 = Root.TrueString;
+						return Root.TrueString;
 					}
 				}
 			}
-			return _loc_6;
+			return Root.FalseString;
 		}
 
 		public static function GetPlayerHealth(target:String) : String
@@ -313,6 +303,11 @@
                     }
                 }
             }
+		}
+
+		public static function ReloadMap() : void
+		{
+			Root.Game.world.reloadCurrentMap();
 		}
 
 	}
