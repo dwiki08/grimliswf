@@ -113,9 +113,8 @@
 			this.addCallback("ResetShopInfo", Shops.ResetShopInfo);
 			this.addCallback("IsShopLoaded", Shops.IsShopLoaded);
 			this.addCallback("BuyItem", Shops.BuyItem);
+			this.addCallback("BuyItemQty", Shops.BuyItemQty);
 			this.addCallback("BuyItemQtyById", Shops.BuyItemQtyById);
-			this.addCallback("GetShopItem", Shops.GetShopItem);
-			this.addCallback("GetShopItemById", Shops.GetShopItemById);
 			
 			this.addCallback("GetBank", Bank.GetBank);
 			this.addCallback("GetBankItems", Bank.GetBankItems);
