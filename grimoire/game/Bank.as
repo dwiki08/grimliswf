@@ -69,16 +69,24 @@
 			return null;
 		}
 
+		public static function GetItemByName2(name:String):String 
+		{
+			return JSON.stringify(GetItemByName(name));
+		}
+
 		public static function Show() : void
 		{
 			Root.Game.world.toggleBank();
-			return;
+		}
+
+		public static function GetBank() : void
+		{
+			Root.Game.getBank();
 		}
 
 		public static function LoadBankItems() : void
 		{
-			Root.Game.sfc.sendXtMessage("zm", "loadBank", ["Sword", "Axe", "Dagger", "Gun", "Bow", "Mace", "Polearm", "Staff", "Wand", "Class", "Armor", "Helm", "Cape", "Pet", "Amulet", "Necklace", "Note", "Resource", "Item", "Quest Item", "ServerUse", "House", "Wall Item", "Floor Item", "Enhancement"], "str", Root.Game.world.curRoom);
-			return;
+			Root.Game.sfc.sendXtMessage("zm", "loadBank", ["All"], "str", Root.Game.world.curRoom);
 		}
 
 	}

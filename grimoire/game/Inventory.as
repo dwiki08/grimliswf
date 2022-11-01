@@ -26,6 +26,11 @@
 			return null;
 		}
 		
+		public static function GetItemByName2(name:String):String 
+		{
+			return JSON.stringify(GetItemByName(name));
+		}
+		
 		public static function GetItemByID(id:int):Object
 		{
 			for each (var item:Object in Root.Game.world.myAvatar.items)

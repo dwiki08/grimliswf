@@ -45,6 +45,32 @@
 			if (item != null)
 				Root.Game.world.sendBuyItemRequest(item);
 		}
+
+		public static function BuyItemQty(name:String, qty:int):void
+        {
+            var item:Object = GetShopItem(name.toLowerCase());
+            if (item != null) 
+			{
+                var buy:Object = new Object();
+                buy.accept = 1;
+                buy.iQty   = qty;
+                buy.iSel   = item;
+                Root.Game.world.sendBuyItemRequestWithQuantity(buy);
+            }
+        }
+		
+		public static function BuyItemQtyById(qty:int, itemId:int, shopItemId:int):void
+        {
+            var item:Object = GetShopItemById(itemId, shopItemId);
+            if (item != null) 
+			{
+                var buy:Object = new Object();
+                buy.accept = 1;
+                buy.iQty   = qty;
+                buy.iSel   = item;
+                Root.Game.world.sendBuyItemRequestWithQuantity(buy);
+            }
+        }
 		
 		public static function GetShopItem(name:String):Object
 		{
@@ -53,6 +79,20 @@
 			{
 				var item:Object = Root.Game.world.shopinfo.items[i];
 				if (item.sName.toLowerCase() == name)
+					return item;
+				i++;
+			}
+			return null;
+		}
+		
+		
+		public static function GetShopItemById(itemId:int, shopItemId:int):Object
+		{
+			var i:int = 0;
+			while (i < Root.Game.world.shopinfo.items.length)
+			{
+				var item:Object = Root.Game.world.shopinfo.items[i];
+				if (item.ItemID == itemId && item.ShopItemID == shopItemId)
 					return item;
 				i++;
 			}

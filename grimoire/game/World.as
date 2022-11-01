@@ -88,7 +88,7 @@
 		}
 		
 		public static function GetMonsterHealth(monster:String) : String {
-			var mon:Object = World.GetMonsterByName2(monster);
+			var mon:Object = World.GetMonsterByName(monster);
 			return mon.dataLeaf.intHP.toString();
 		}
 		
@@ -109,19 +109,6 @@
 		}
 
 		public static function GetMonsterByName(name:String):Object
-		{
-			for each (var mon:Object in Root.Game.world.getMonstersByCell(Root.Game.world.strFrame))
-			{
-				var monster:String = mon.pMC.pname.ti.text.toLowerCase();
-				if (((monster.indexOf(name.toLowerCase()) > -1) || (name == "*")) && mon.dataLeaf.intState > 0)
-				{
-					return mon;
-				}
-			}
-			return null;
-		}
-
-		public static function GetMonsterByName2(name:String):Object
 		{
 			for each (var mon:Object in Root.Game.world.getMonstersByCell(Root.Game.world.strFrame))
 			{
@@ -188,44 +175,34 @@
 
 		public static function GetCellPlayers(param1)
 		{
-			var _loc_2:* = undefined;
-			var _loc_3:* = undefined;
-			var _loc_4:* = Root.Game.world.uoTree;
-			var _loc_5:* = Root.FalseString;
-			for (_loc_3 in _loc_4)
+			for (var p:* in Root.Game.world.uoTree)
 			{
-				
-				_loc_2 = _loc_4[_loc_3];
-				if (_loc_2.strUsername.toLowerCase() == param1.toLowerCase())
+				var player:* = Root.Game.world.uoTree[p];
+				if (player.strUsername.toLowerCase() == param1.toLowerCase())
 				{
-					if (_loc_2.strFrame.toLowerCase() == Root.Game.world.strFrame.toLowerCase())
+					if (player.strFrame.toLowerCase() == Root.Game.world.strFrame.toLowerCase())
 					{
-						_loc_5 = Root.TrueString;
+						return Root.TrueString;
 					}
 				}
 			}
-			return _loc_5;
+			return Root.FalseString;
 		}
 
 		public static function CheckCellPlayer(param1, param2)
 		{
-			var _loc_3:* = undefined;
-			var _loc_4:* = undefined;
-			var _loc_5:* = Root.Game.world.uoTree;
-			var _loc_6:* = Root.FalseString;
-			for (_loc_4 in _loc_5)
+			for (var p in Root.Game.world.uoTree)
 			{
-				
-				_loc_3 = _loc_5[_loc_4];
-				if (_loc_3.strUsername.toLowerCase() == param1.toLowerCase())
+				var player:* = Root.Game.world.uoTree[p];
+				if (player.strUsername.toLowerCase() == param1.toLowerCase())
 				{
-					if (_loc_3.strFrame.toLowerCase() == param2.toLowerCase())
+					if (player.strFrame.toLowerCase() == param2.toLowerCase())
 					{
-						_loc_6 = Root.TrueString;
+						return Root.TrueString;
 					}
 				}
 			}
-			return _loc_6;
+			return Root.FalseString;
 		}
 
 		public static function GetPlayerHealth(target:String) : String
@@ -280,9 +257,9 @@
 			else
 			{
 				var children:int = Root.Game.ui.dropStack.numChildren;
-				for (var i:int = 0; i < children; i++)
+				for (var j:int = 0; j < children; j++)
 				{
-					var child:* = Root.Game.ui.dropStack.getChildAt(i);
+					var child:* = Root.Game.ui.dropStack.getChildAt(j);
 					var type:String = getQualifiedClassName(child);
 					if (type.indexOf("DFrame2MC") != -1)
 					{
@@ -313,6 +290,17 @@
                     }
                 }
             }
+		}
+
+		public static function ReloadMap() : void
+		{
+			Root.Game.world.reloadCurrentMap();
+		}
+
+		// testing
+		public static function SetMapQuestVal(): void
+		{
+			Root.Game.world.map.questVal = 30;
 		}
 
 	}

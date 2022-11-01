@@ -12,6 +12,7 @@
 	import flash.events.KeyboardEvent;
 	import flash.events.TimerEvent;
 	import flash.events.ProgressEvent;
+	import flash.ui.Keyboard;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestMethod;
@@ -28,18 +29,23 @@
 
 	public class Root extends MovieClip
 	{
-		private var urlLoader:URLLoader;
-		private var loader:Loader;
-		private var loaderVars:Object;
-		private var external:Externalizer;
 		private const sTitle:String = "Grimlite Li";
 		private const sURL:String = "https://game.aq.com/game/";
 		private const versionURL:String = this.sURL + "api/data/gameversion";
 		private const LoginURL = this.sURL + "api/login/now";
+		private var urlLoader:URLLoader;
+		private var loader:Loader;
+		private var loaderVars:Object;
+		private var external:Externalizer;
 		private var sFile:String;
 		private var sBG:String;
+		private var isEU:Boolean;
+		private var isWeb:Boolean;
+		private var doSignup:Boolean;
 		private var stg:Object;
 		private var vars:URLVariables;
+		private var serversLoader:URLLoader = new URLLoader();
+
 		public static var GameDomain:ApplicationDomain;
 		public static var Game:*;
 		public static const TrueString:String = "\"True\"";
@@ -47,7 +53,6 @@
 		public static var Username:String;
 		public static var Password:String;
 		public var mcLoading:MovieClip;
-		private var serversLoader:URLLoader = new URLLoader();
 
 		public function Root()
 		{
@@ -68,9 +73,11 @@
 			this.urlLoader.removeEventListener(Event.COMPLETE,this.OnDataComplete);
 			var vars:Object = JSON.parse(event.target.data);
 			this.sFile = vars.sFile + "?ver=" + vars.sVersion;
-			//this.sFile = vars.sFile + "?ver=" + Math.random();
 			//this.sTitle = vars.sTitle;
-			this.sBG = vars.sBG;			
+			this.isEU = vars.isEU == "true";
+			this.isWeb = false;
+			this.doSignup = false;
+			this.sBG = vars.sBG;
 			this.loaderVars = vars;
 			this.LoadGame();
 		}
@@ -112,23 +119,29 @@
 			Game.params.sBG = this.sBG;
 			Game.params.sTitle = this.sTitle;
 			Game.params.loginURL = this.LoginURL;
+			Game.params.isEU = this.isEU;
+			Game.params.isWeb = this.isWeb;
+			Game.params.doSignup = this.doSignup;
+			Game.params.test = false;
 			
 			Game.sfc.addEventListener(SFSEvent.onExtensionResponse, this.OnExtensionResponse);
 			GameDomain = LoaderInfo(event.target).applicationDomain;
 			
-			Game.sfc.addEventListener(SFSEvent.onConnectionLost, this.OnDisconnect);
+			Game.sfc.addEventListener(SFSEvent.onConnectionLost, this.OnConnectionLost);
 			Game.sfc.addEventListener(SFSEvent.onConnection, this.OnConnection);
+			Game.sfc.addEventListener(SFSEvent.onJoinRoomError, this.OnJoinRoomError);
 			Game.sfc.addEventListener(SFSEvent.onDebugMessage, this.PacketReceived);
 			Game.loginLoader.addEventListener(Event.COMPLETE, this.OnLoginComplete);	
 			//getServers();
 			addEventListener(Event.ENTER_FRAME, this.EnterFrame);
+			trace("OnComplete Stage");
 		}
 
-		private function getServers() {
+		private function getServers() 
+		{
 			var urlServers:String = "https://game.aq.com/game/api/data/servers";
 			var request:URLRequest = new URLRequest(urlServers);
 			request.method = URLRequestMethod.GET;
-			
 			serversLoader.addEventListener(Event.COMPLETE, this.OnServersLoaded);
 			try 
 			{
@@ -140,21 +153,28 @@
 			}
 		}
 
-		private function OnServersLoaded(event:Event) {
+		private function OnServersLoaded(event:Event) 
+		{
 			var vars:Object = JSON.parse(event.target.data);
 			this.external.call("getServers2", JSON.stringify(vars));
 			serversLoader.removeEventListener(Event.COMPLETE, this.OnServersLoaded);
 		}
 
-		private function OnDisconnect(param1) : void
+		private function OnConnectionLost(param1) : void
 		{
-			this.external.call("disconnect");
-			trace("OnDisconnect");
+			this.external.call("connection", "OnConnectionLost");
+			Game.gotoAndPlay(Game.litePreference.data.bCharSelect ? "Select" : "Login");
 		}
 		
 		private function OnConnection(param1) : void
 		{
-			trace("OnConnection");
+			this.external.call("connection", "OnConnection");
+			RemoveCharSelectUI();
+		}
+
+		private function OnJoinRoomError(param1) : void
+		{
+			this.external.debug("OnJoinRoomError");
 		}
 
 		private function OnLoginComplete(event:Event) : void
@@ -162,7 +182,7 @@
 			//event.target.data = String(ExternalInterface.call("modifyServers", event.target.data));
 			var vars:Object = JSON.parse(event.target.data);
 			this.external.call("getServers", JSON.stringify(vars))
-			vars.login.iAccess = 50;
+			//vars.login.iAccess = 70;
 			vars.login.iUpg = 10;
 			vars.login.iUpgDays = 999;
 			for (var s in vars.servers) 
@@ -177,10 +197,14 @@
 		{
 			if (Game.mcLogin != null && Game.mcLogin.ni != null && Game.mcLogin.pi != null && Game.mcLogin.btnLogin != null)
 			{
-				//removeEventListener(Event.ENTER_FRAME, EnterFrame);
+				//removeEventListener(Event.ENTER_FRAME, EnterFrame); NO NEED TO REMOVE THE LISTENER
 				Game.mcLogin.btnLogin.removeEventListener(MouseEvent.CLICK, this.onLoginClick);
 				Game.mcLogin.btnLogin.addEventListener(MouseEvent.CLICK, this.onLoginClick);
+
+				Game.mcLogin.removeEventListener(KeyboardEvent.KEY_DOWN, this.onLoginKeyEnter);
+				Game.mcLogin.addEventListener(KeyboardEvent.KEY_DOWN, this.onLoginKeyEnter);
 			}
+
 			if (Game.mcCharSelect != null) 
 			{
 				Game.mcCharSelect.btnLogin.removeEventListener(MouseEvent.CLICK, Game.mcCharSelect.onBtnLogin);
@@ -192,12 +216,43 @@
 				Game.mcCharSelect.passwordui.txtPassword.removeEventListener(KeyboardEvent.KEY_DOWN, Game.mcCharSelect.passwordui.onPasswordEnter);
 				Game.mcCharSelect.passwordui.txtPassword.addEventListener(KeyboardEvent.KEY_DOWN, this.onPasswordEnter);
 			}
+
+			if (Game.mcConnDetail != null) 
+			{
+				Game.mcConnDetail.addEventListener(Event.ADDED_TO_STAGE, AddedStageConnDetail);
+				if (Game.mcConnDetail.txtDetail.text.indexOf("Error loading bank") >= 0 ||
+					Game.mcConnDetail.txtDetail.text.indexOf("Communication with server has been lost") >= 0) 
+				{
+					Game.mcConnDetail.hideConn();
+				}
+			}
+		}
+
+		private function AddedStageConnDetail(event:Event) : void
+		{
+			Game.mcConnDetail.removeEventListener(Event.ADDED_TO_STAGE, AddedStageConnDetail);
+			var o:Object = {
+    			text: Game.mcConnDetail.txtDetail.text,
+    			btnBack: Game.mcConnDetail.btnBack.visible 
+			};
+			this.external.call("currentConnDetail", JSON.stringify(o));
+			trace("Added Conn Detail : " + JSON.stringify(o));
+			if (Game.mcConnDetail.btnBack.visible) HideConnMC();
 		}
 
 		private function onLoginClick(event:MouseEvent) : void
 		{
 			Username = Game.mcLogin.ni.text;
 			Password = Game.mcLogin.pi.text;
+		}
+
+		private function onLoginKeyEnter(event:KeyboardEvent) : void 
+		{
+			if(event.keyCode == Keyboard.ENTER) 
+			{
+				Username = Game.mcLogin.ni.text;
+				Password = Game.mcLogin.pi.text;
+			}
 		}
 
 		public function onBtnServer(event:MouseEvent) : void
@@ -214,6 +269,7 @@
 			else
 			{
 				Login();
+				RemoveCharSelectUI();
 			}
 		}
 
@@ -223,11 +279,12 @@
 			Login();
 			myTimer.addEventListener(TimerEvent.TIMER, this.WaitServersLoad);
 			myTimer.start();
+			RemoveCharSelectUI();
 		}
 
 		private function onPasswordEnter(event:KeyboardEvent) : void
 		{
-			if(event.keyCode == 13)
+			if(event.keyCode == Keyboard.ENTER)
 			{
 				var relPass:* = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo;
 				if(relPass.strPassword != Game.mcCharSelect.passwordui.txtPassword.text)
@@ -241,6 +298,29 @@
 				else
 				{
 					Login();
+					RemoveCharSelectUI();
+				}
+			}
+		}
+
+		private var myTimer:Timer = new Timer(200);
+		private function WaitServersLoad(event: TimerEvent): void
+		{
+			if (AutoRelogin.AreServersLoaded() == Root.TrueString) 
+			{
+				myTimer.removeEventListener(TimerEvent.TIMER, this.WaitServersLoad);
+				myTimer.stop();
+				var server:String = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].server;
+				AutoRelogin.Connect(server);
+			}
+		}
+
+		private function RemoveCharSelectUI() : void
+		{
+			if(Game.mcCharSelect != null) {
+				if (Game.mcCharSelect.parent != null) {
+					MovieClip(Game.mcCharSelect.parent).removeChild(Game.mcCharSelect);
+					this.external.debug("mcCharSelect cleared");
 				}
 			}
 		}
@@ -249,20 +329,7 @@
 		{
 			Username = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo.strUsername;
 			Password = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].loginInfo.strPassword;
-			AutoRelogin.FixLogin(Username, Password);
-		}
-
-		private var myTimer:Timer = new Timer(500);
-		private function WaitServersLoad(event: TimerEvent): void
-		{
-			if (AutoRelogin.AreServersLoaded() == Root.TrueString) 
-			{
-				myTimer.removeEventListener(TimerEvent.TIMER, this.WaitServersLoad);
-				myTimer.stop();
-
-				var server:String = Game.mcCharSelect.mngr.displayAvts[Game.mcCharSelect.pos].server;
-				AutoRelogin.Connect(server);
-			}
+			AutoRelogin.Login();
 		}
 		
 		private function OnExtensionResponse(packet:*):void
@@ -333,21 +400,32 @@
 		public function SetFPS(fps:String) : void
 		{
 			this.stg.frameRate = parseInt(fps);
-			return;
 		}
 
 		public function SetTitle(title:String) : void
 		{
-			Game.mcLogin.mcLogo.txtTitle.htmlText = "<font color=\"#CC1F41\">Release:</font>: " + title;
-			Game.params.sTitle.htmlText = "<font color=\"#CC1F41\">Release:</font>: " + title;
-			return;
+			Game.mcLogin.mcLogo.txtTitle.htmlText = "<font color=\"#FFB231\">New Release:</font> " + title;
+			Game.params.sTitle.htmlText = "<font color=\"#FFB231\">New Release:</font> " + title;
 		}
 
-		public static function SendMessage(msg:String) : void
+		public function SendMessage(msg:String) : void
 		{
-			Game.chatF.pushMsg("moderator", msg, "SERVER", "", 0);
-			return;
+			Game.chatF.pushMsg("server", msg, "SERVER", "", 0);
 		}
 
+		public function IsConnMCBackButtonVisible() : String
+		{
+			return Game.mcConnDetail.btnBack.visible && Game.mcConnDetail.stage != null ? TrueString : FalseString;
+		}
+
+		public function GetConnMC() : String
+		{
+			return Game.mcConnDetail.stage == null ? "" : Game.mcConnDetail.txtDetail.text;
+		}
+
+		public function HideConnMC() : void 
+		{
+			Game.mcConnDetail.hideConn();
+		}
 	}
 }

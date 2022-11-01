@@ -69,8 +69,10 @@
 			this.addCallback("SetTargetPvP", Player.SetTargetPvP);
 			this.addCallback("GetAvatars", Player.GetAvatars);
 			this.addCallback("IsMember", Player.IsMember);
+			this.addCallback("IsAvatarLoadComplete", Player.IsAvatarLoadComplete);
 			
 			this.addCallback("MapLoadComplete", World.MapLoadComplete);
+			this.addCallback("ReloadMap", World.ReloadMap);
 			this.addCallback("PlayersInMap", World.PlayersInMap);
 			this.addCallback("IsActionAvailable", World.IsActionAvailable);
 			this.addCallback("GetMonstersInCell", World.GetMonstersInCell);
@@ -91,6 +93,7 @@
 			this.addCallback("GetPlayerHealth", World.GetPlayerHealth);
 			this.addCallback("GetPlayerHealthPercentage", World.GetPlayerHealthPercentage);
 			this.addCallback("RejectDrop", World.RejectDrop);
+			this.addCallback("SetMapQuestVal", World.SetMapQuestVal);
 			
 			this.addCallback("IsInProgress", Quests.IsInProgress);
 			this.addCallback("Complete", Quests.Complete);
@@ -110,8 +113,13 @@
 			this.addCallback("ResetShopInfo", Shops.ResetShopInfo);
 			this.addCallback("IsShopLoaded", Shops.IsShopLoaded);
 			this.addCallback("BuyItem", Shops.BuyItem);
+			this.addCallback("BuyItemQtyById", Shops.BuyItemQtyById);
+			this.addCallback("GetShopItem", Shops.GetShopItem);
+			this.addCallback("GetShopItemById", Shops.GetShopItemById);
 			
+			this.addCallback("GetBank", Bank.GetBank);
 			this.addCallback("GetBankItems", Bank.GetBankItems);
+			this.addCallback("GetBankItemByName", Bank.GetItemByName2);
 			this.addCallback("BankSlots", Bank.BankSlots);
 			this.addCallback("UsedBankSlots", Bank.UsedBankSlots);
 			this.addCallback("TransferToBank", Bank.TransferToBank);
@@ -121,6 +129,7 @@
 			this.addCallback("LoadBankItems", Bank.LoadBankItems);
 			
 			this.addCallback("GetInventoryItems", Inventory.GetInventoryItems);
+			this.addCallback("GetInventoryItemByName", Inventory.GetItemByName2);
 			this.addCallback("InventorySlots", Inventory.InventorySlots);
 			this.addCallback("UsedInventorySlots", Inventory.UsedInventorySlots);
 			this.addCallback("GetTempItems", TempInventory.GetTempItems);
@@ -150,6 +159,10 @@
 			this.addCallback("GetUsername", root.GetUsername);
 			this.addCallback("GetPassword", root.GetPassword);
 			this.addCallback("SetTitle", root.SetTitle);
+			this.addCallback("SendMessage", root.SendMessage);
+			this.addCallback("IsConnMCBackButtonVisible", root.IsConnMCBackButtonVisible);
+			this.addCallback("GetConnMC", root.GetConnMC);
+			this.addCallback("HideConnMC", root.HideConnMC);
 			
 			this.addCallback("getGameObject", Caller.getGameObject);
 			this.addCallback("getGameObjectS", Caller.getGameObjectS);

@@ -13,9 +13,9 @@
 			return Root.Game.world.isQuestInProgress(parseInt(id)) ? Root.TrueString : Root.FalseString;
 		}
 		
-		public static function Complete(id:String, itemID:String = "-1", special:String = "False"):void
+		public static function Complete(id:String, qty:int = 1, itemID:String = "-1", special:String = "False"):void
 		{
-			Root.Game.world.tryQuestComplete(parseInt(id), parseInt(itemID), special == "True");
+			Root.Game.world.tryQuestComplete(parseInt(id), parseInt(itemID), special == "True", qty);
 		}
 		
 		public static function Accept(id:String):void
@@ -45,9 +45,9 @@
 		public static function CanComplete(id: String): String {
 
 			var validation: String = GetQuestValidationString(parseInt(id));
-			if (validation != "") {
-				Root.Game.chatF.pushMsg("warning", "Can\'t turn in quest(" + id + "), message : " + validation, "SERVER", "", 0);
-			}
+			// if (validation != "") {
+			// 	Root.Game.chatF.pushMsg("warning", "Can\'t turn in quest(" + id + "), message : " + validation, "SERVER", "", 0);
+			// }
 			return Root.Game.world.canTurnInQuest(parseInt(id)) && validation == "" ? Root.TrueString : Root.FalseString;
 		}
 		

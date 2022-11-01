@@ -44,17 +44,17 @@
             super(param1);
             this.params = param2;
             return;
-        }// end function
+        }
 
         override public function clone() : Event
         {
             return new SFSEvent(this.type, this.params);
-        }// end function
+        }
 
         override public function toString() : String
         {
             return formatToString("SFSEvent", "type", "bubbles", "cancelable", "eventPhase", "params");
-        }// end function
+        }
 
     }
 }

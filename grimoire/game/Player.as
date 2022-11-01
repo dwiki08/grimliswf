@@ -92,9 +92,9 @@
 			return Math.max(Math.max(IsSkillReady(Root.Game.world.actions.active[1]), IsSkillReady(Root.Game.world.actions.active[2])), Math.max(IsSkillReady(Root.Game.world.actions.active[3]), IsSkillReady(Root.Game.world.actions.active[4])));
 		}
 
-		public static function SkillAvailable(param1:String) : int
+		public static function SkillAvailable(skillIndex:String) : int
 		{
-			return IsSkillReady(Root.Game.world.actions.active[parseInt(param1)]);
+			return IsSkillReady(Root.Game.world.actions.active[parseInt(skillIndex)]);
 		}
 
 		private static function IsSkillReady(param1) : int
@@ -141,16 +141,12 @@
 		public static function CancelAutoAttack() : void
 		{
 			Root.Game.world.cancelAutoAttack();
-			return;
 		}
 
 		public static function CancelTarget() : void
 		{
-			if (Root.Game.world.myAvatar.target != null)
-			{
-				Root.Game.world.cancelTarget();
-			}
-			return;
+			Root.Game.world.cancelTarget();
+			Root.Game.world.cancelTarget();
 		}
 
 		public static function CancelTargetSelf() : void
@@ -164,14 +160,12 @@
 			{
 				Root.Game.world.cancelTarget();
 			}
-			return;
 		}
 
 		public static function SetTargetPlayer(username:String) : void
 		{
 			var avatar:* = Root.Game.world.getAvatarByUserName(username);
 			Root.Game.world.setTarget(avatar);
-			return;
 		}
 		
 		public static function GetAvatars() : String
@@ -236,61 +230,48 @@
 			{
 				Root.Game.chatF.muteMe(300000);
 			}
-			return;
 		}
 
-		public static function AttackMonster(param1:String) : void
+		public static function AttackMonster(monsterName:String) : void
 		{
-			var param1:* = param1;
-			var name:* = param1;
-			var monster:* = World.GetMonsterByName2(name);
+			var monster:* = World.GetMonsterByName(monsterName);
 			if (monster != null)
 			{
 				try
 				{
 					Root.Game.world.setTarget(monster);
 					Root.Game.world.approachTarget();
-					return;
 				}
 				catch (e)
 				{
 					return;
 				}
 			}
-			else
-			{
-				return;
-			}
 		}
 
 		public static function Jump(param1:String, param2:String = "Spawn") : void
 		{
 			Root.Game.world.moveToCell(param1, param2);
-			return;
 		}
 
 		public static function Rest() : void
 		{
 			Root.Game.world.rest();
-			return;
 		}
 
 		public static function Join(param1:String, param2:String = "Enter", param3:String = "Spawn") : void
 		{
 			Root.Game.world.gotoTown(param1, param2, param3);
-			return;
 		}
 
 		public static function Equip(param1:String) : void
 		{
 			Root.Game.world.sendEquipItemRequest({ItemID:parseInt(param1)});
-			return;
 		}
 
 		public static function EquipPotion(param1:String, param2:String, param3:String, param4:String) : void
 		{
 			Root.Game.world.equipUseableItem({ItemID:parseInt(param1), sDesc:param2, sFile:param3, sName:param4});
-			return;
 		}
 
 		public static function Buff() : void
@@ -308,10 +289,9 @@
 			return;
 		}
 
-		public static function GoTo(param1:String) : void
+		public static function GoTo(username:String) : void
 		{
-			Root.Game.world.goto(param1);
-			return;
+			Root.Game.world.goto(username);
 		}
 		
 		public static function UseBoost(id:String):void
@@ -360,38 +340,36 @@
 			}
 		}
 
-		public static function GetMapItem(param1:String) : void
+		public static function GetMapItem(itemId:String) : void
 		{
-			Root.Game.world.getMapItem(parseInt(param1));
-			return;
+			Root.Game.world.getMapItem(parseInt(itemId));
 		}
 
 		public static function Logout() : void
 		{
 			Root.Game.logout();
-			return;
 		}
 
-		public static function HasActiveBoost(param1:String) : String
+		public static function HasActiveBoost(boost:String) : String
 		{
-			param1 = param1.toLowerCase();
-			if (param1.indexOf("gold") > -1)
+			boost = boost.toLowerCase();
+			if (boost.indexOf("gold") > -1)
 			{
 				return Root.Game.world.myAvatar.objData.iBoostG > 0 ? (Root.TrueString) : (Root.FalseString);
 			}
-			if (param1.indexOf("xp") > -1)
+			if (boost.indexOf("xp") > -1)
 			{
 				return Root.Game.world.myAvatar.objData.iBoostXP > 0 ? (Root.TrueString) : (Root.FalseString);
 			}
-			if (param1.indexOf("rep") > -1)
+			if (boost.indexOf("rep") > -1)
 			{
 				return Root.Game.world.myAvatar.objData.iBoostRep > 0 ? (Root.TrueString) : (Root.FalseString);
 			}
-			if (param1.indexOf("class") > -1)
+			if (boost.indexOf("class") > -1)
 			{
 				return Root.Game.world.myAvatar.objData.iBoostCP > 0 ? (Root.TrueString) : (Root.FalseString);
 			}
-			return Root.TrueString;
+			return Root.FalseString;
 		}
 
 		public static function PlayerClass() : String
@@ -441,40 +419,37 @@
 			return;
 		}
 
-		public static function GetEquip(param1:int) : String
+		public static function GetEquip(itemId:int) : String
 		{
-			return JSON.stringify(Root.Game.world.avatars[param1].objData.eqp);
+			return JSON.stringify(Root.Game.world.avatars[itemId].objData.eqp);
 		}
 
-		public static function ChangeName(param1:String) : void
+		public static function ChangeName(name:String) : void
 		{
-			Root.Game.world.myAvatar.pMC.pname.ti.text = param1.toUpperCase();
-			Root.Game.ui.mcPortrait.strName.text = param1.toUpperCase();
-			Root.Game.world.myAvatar.objData.strUsername = param1.toUpperCase();
-			Root.Game.world.myAvatar.pMC.pAV.objData.strUsername = param1.toUpperCase();
-			return;
+			Root.Game.world.myAvatar.pMC.pname.ti.text = name.toUpperCase();
+			Root.Game.ui.mcPortrait.strName.text = name.toUpperCase();
+			Root.Game.world.myAvatar.objData.strUsername = name.toUpperCase();
+			Root.Game.world.myAvatar.pMC.pAV.objData.strUsername = name.toUpperCase();
 		}
 
-		public static function ChangeGuild(param1:String) : void
+		public static function ChangeGuild(guild:String) : void
 		{
 			if (Root.Game.world.myAvatar.objData.guild != null)
 			{
-				Root.Game.world.myAvatar.pMC.pname.tg.text = param1.toUpperCase();
-				Root.Game.world.myAvatar.objData.guild.Name = param1.toUpperCase();
-				Root.Game.world.myAvatar.pMC.pAV.objData.guild.Name = param1.toUpperCase();
+				Root.Game.world.myAvatar.pMC.pname.tg.text = guild.toUpperCase();
+				Root.Game.world.myAvatar.objData.guild.Name = guild.toUpperCase();
+				Root.Game.world.myAvatar.pMC.pAV.objData.guild.Name = guild.toUpperCase();
 			}
-			return;
 		}
 
 		public static function SetWalkSpeed(param1:String) : void
 		{
 			Root.Game.world.WALKSPEED = parseInt(param1);
-			return;
 		}
 
-		public static function ChangeAccessLevel(param1:String) : void
+		public static function ChangeAccessLevel(accessLevel:String) : void
 		{
-			if (param1 == "Non Member")
+			if (accessLevel == "Non Member")
 			{
 				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 16777215;
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
@@ -482,7 +457,7 @@
 				Root.Game.world.myAvatar.objData.iUpg = 0;
 				Root.Game.chatF.pushMsg("server", "Access : Non Member", "SERVER", "", 0);
 			}
-			else if (param1 == "Member")
+			else if (accessLevel == "Member")
 			{
 				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 9229823;
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
@@ -490,14 +465,38 @@
 				Root.Game.world.myAvatar.objData.iUpg = 1;
 				Root.Game.chatF.pushMsg("server", "Access : Member", "SERVER", "", 0);
 			}
-			else if (param1 == "Moderator")
+			else if (accessLevel == "Moderator" || accessLevel == "60")
 			{
+				//Yellow
 				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 16698168;
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
 				Root.Game.world.myAvatar.objData.intAccessLevel = 60;
 				Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
 			}
-			return;
+			else if (accessLevel == "30")
+			{
+				//Dark Green
+				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 52881;
+				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
+				Root.Game.world.myAvatar.objData.intAccessLevel = 30;
+				Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
+			}
+			else if (accessLevel == "40")
+			{
+				//Light Green
+				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 5308200;
+				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
+				Root.Game.world.myAvatar.objData.intAccessLevel = 40;
+				Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
+			}
+			else if (accessLevel == "50")
+			{
+				//Purple
+				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 12283391;
+				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
+				Root.Game.world.myAvatar.objData.intAccessLevel = 50;
+				Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
+			}
 		}
 		
 		public static function GetTargetHealth() : int 
@@ -505,5 +504,9 @@
 			return Root.Game.world.myAvatar.target.dataLeaf.intHP;
 		}	
 
+		public static function IsAvatarLoadComplete() : String
+		{
+			return Game.world.myAvatar.objData == null ? Root.False : Root.TrueString;
+		}
 	}
 }
