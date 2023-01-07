@@ -69,7 +69,7 @@
 			this.addCallback("SetTargetPvP", Player.SetTargetPvP);
 			this.addCallback("GetAvatars", Player.GetAvatars);
 			this.addCallback("IsMember", Player.IsMember);
-			this.addCallback("IsAvatarLoadComplete", Player.IsAvatarLoadComplete);
+			this.addCallback("GetAurasValue", Player.GetAurasValue);
 			
 			this.addCallback("MapLoadComplete", World.MapLoadComplete);
 			this.addCallback("ReloadMap", World.ReloadMap);

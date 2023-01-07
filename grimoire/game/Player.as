@@ -504,9 +504,23 @@
 			return Root.Game.world.myAvatar.target.dataLeaf.intHP;
 		}	
 
-		public static function IsAvatarLoadComplete() : String
-		{
-			return Game.world.myAvatar.objData == null ? Root.False : Root.TrueString;
-		}
+        public static function GetAurasValue(self:String, auraName:String) : int
+        {
+			var value = 0;
+			var isSelf = self == "True";
+			var hasTarget = Root.Game.world.myAvatar.target != null && Root.Game.world.myAvatar.target.dataLeaf.intHP > 0;
+            if (!isSelf && !hasTarget) 
+			{
+				return value;
+			}
+			var objAura = isSelf ? Root.Game.world.myAvatar.dataLeaf.auras : Root.Game.world.myAvatar.target.dataLeaf.auras;
+            for each (var aura in objAura) {
+                if (aura.nam.toLowerCase() == auraName.toLowerCase()) 
+                {
+                    value = aura.val ? aura.val : 1;
+                }
+            }
+			return value;
+        }
 	}
 }
