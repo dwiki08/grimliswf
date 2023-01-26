@@ -248,6 +248,23 @@
 				}
 			}
 		}
+		
+		public static function AttackMonsterByMonMapId(monMapID:String) : void
+		{
+			var monster:* = World.GetMonsterByMonMapId(monMapID);
+			if (monster != null)
+			{
+				try
+				{
+					Root.Game.world.setTarget(monster);
+					Root.Game.world.approachTarget();
+				}
+				catch (e)
+				{
+					return;
+				}
+			}
+		}
 
 		public static function Jump(param1:String, param2:String = "Spawn") : void
 		{
@@ -455,7 +472,7 @@
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
 				Root.Game.world.myAvatar.objData.iUpgDays = -1;
 				Root.Game.world.myAvatar.objData.iUpg = 0;
-				Root.Game.chatF.pushMsg("server", "Access : Non Member", "SERVER", "", 0);
+				//Root.Game.chatF.pushMsg("server", "Access : Non Member", "SERVER", "", 0);
 			}
 			else if (accessLevel == "Member")
 			{
@@ -463,7 +480,7 @@
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
 				Root.Game.world.myAvatar.objData.iUpgDays = 30;
 				Root.Game.world.myAvatar.objData.iUpg = 1;
-				Root.Game.chatF.pushMsg("server", "Access : Member", "SERVER", "", 0);
+				//Root.Game.chatF.pushMsg("server", "Access : Member", "SERVER", "", 0);
 			}
 			else if (accessLevel == "Moderator" || accessLevel == "60")
 			{
@@ -471,7 +488,7 @@
 				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 16698168;
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
 				Root.Game.world.myAvatar.objData.intAccessLevel = 60;
-				Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
+				//Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
 			}
 			else if (accessLevel == "30")
 			{
@@ -479,7 +496,6 @@
 				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 52881;
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
 				Root.Game.world.myAvatar.objData.intAccessLevel = 30;
-				Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
 			}
 			else if (accessLevel == "40")
 			{
@@ -487,7 +503,6 @@
 				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 5308200;
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
 				Root.Game.world.myAvatar.objData.intAccessLevel = 40;
-				Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
 			}
 			else if (accessLevel == "50")
 			{
@@ -495,8 +510,11 @@
 				Root.Game.world.myAvatar.pMC.pname.ti.textColor = 12283391;
 				Root.Game.world.myAvatar.pMC.pname.filters = [new GlowFilter(0, 1, 3, 3, 64, 1)];
 				Root.Game.world.myAvatar.objData.intAccessLevel = 50;
-				Root.Game.chatF.pushMsg("server", "Access : Moderator", "SERVER", "", 0);
 			}
+		}
+
+		public static function ChangeColorName(color: int) {
+            Root.Game.world.myAvatar.pMC.pname.ti.textColor = color;
 		}
 		
 		public static function GetTargetHealth() : int 

@@ -56,6 +56,7 @@
 				mon.sRace = m.objData.sRace;
 				mon.strMonName = m.objData.strMonName;
 				mon.MonID = m.dataLeaf.MonID;
+				mon.MonMapID = m.dataLeaf.MonMapID;
 				mon.iLvl = m.dataLeaf.iLvl;
 				mon.intState = m.dataLeaf.intState;
 				mon.intHP = m.dataLeaf.intHP;
@@ -78,6 +79,7 @@
 				mon.sRace = m.objData.sRace;
 				mon.strMonName = m.objData.strMonName;
 				mon.MonID = m.dataLeaf.MonID;
+				mon.MonMapID = m.dataLeaf.MonMapID;
 				mon.iLvl = m.dataLeaf.iLvl;
 				mon.intState = m.dataLeaf.intState;
 				mon.intHP = m.dataLeaf.intHP;
@@ -101,6 +103,11 @@
 		{
 			return GetMonsterByName(name) != null ? Root.TrueString : Root.FalseString;
 		}
+		
+		public static function IsMonsterAvailableByMonMapID(monMapID:String):String
+		{
+			return GetMonsterByMonMapId(monMapID) != null ? Root.TrueString : Root.FalseString;
+		}
 
 		public static function GetSkillName(index:String):String
 		{
@@ -123,6 +130,22 @@
 			}
 			return null;
 		}
+
+        public static function GetMonsterByMonMapId(monId:String):Object
+        {
+            for each (var mon:Object in Root.Game.world.getMonstersByCell(Root.Game.world.strFrame))
+            {
+                if (mon.pMC) 
+                {
+                    var monster:String = mon.dataLeaf.MonMapID;
+                    if (((monster.indexOf(monId) > -1) || (monId == "*")) && mon.dataLeaf.intState > 0)
+                    {
+                        return mon;
+                    }
+                }
+            }
+            return null;
+        }
 
 		public static function GetCells():String
 		{

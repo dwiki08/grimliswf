@@ -29,7 +29,7 @@
 
 	public class Root extends MovieClip
 	{
-		private const sTitle:String = "Grimlite Li";
+		private var sTitle:String = "Grimlite Li";
 		private const sURL:String = "https://game.aq.com/game/";
 		private const versionURL:String = this.sURL + "api/data/gameversion";
 		private const LoginURL = this.sURL + "api/login/now";
@@ -73,7 +73,7 @@
 			this.urlLoader.removeEventListener(Event.COMPLETE,this.OnDataComplete);
 			var vars:Object = JSON.parse(event.target.data);
 			this.sFile = vars.sFile + "?ver=" + vars.sVersion;
-			//this.sTitle = vars.sTitle;
+			this.sTitle = vars.sTitle;
 			this.isEU = vars.isEU == "true";
 			this.isWeb = false;
 			this.doSignup = false;

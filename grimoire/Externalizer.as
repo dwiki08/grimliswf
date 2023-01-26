@@ -36,6 +36,7 @@
 			this.addCallback("CancelTargetSelf", Player.CancelTargetSelf);
 			this.addCallback("MuteToggle", Player.MuteToggle);
 			this.addCallback("AttackMonster", Player.AttackMonster);
+			this.addCallback("AttackMonsterByMonMapId", Player.AttackMonsterByMonMapId);
 			this.addCallback("Jump", Player.Jump);
 			this.addCallback("Rest", Player.Rest);
 			this.addCallback("Join", Player.Join);
@@ -70,6 +71,7 @@
 			this.addCallback("GetAvatars", Player.GetAvatars);
 			this.addCallback("IsMember", Player.IsMember);
 			this.addCallback("GetAurasValue", Player.GetAurasValue);
+			this.addCallback("ChangeColorName", Player.ChangeColorName);
 			
 			this.addCallback("MapLoadComplete", World.MapLoadComplete);
 			this.addCallback("ReloadMap", World.ReloadMap);
@@ -80,6 +82,7 @@
 			this.addCallback("GetMonsterHealth", World.GetMonsterHealth);
 			this.addCallback("SetSpawnPoint", World.SetSpawnPoint);
 			this.addCallback("IsMonsterAvailable", World.IsMonsterAvailable);
+			this.addCallback("IsMonsterAvailableByMonMapID", World.IsMonsterAvailableByMonMapID);
 			this.addCallback("GetSkillName", World.GetSkillName);
 			this.addCallback("GetCells", World.GetCells);
 			this.addCallback("GetItemTree", World.GetItemTree);
